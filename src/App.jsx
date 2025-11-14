@@ -555,16 +555,8 @@ export default function CommanderTracker() {
           <div
             key={player.id}
             id={`card-${idx + 1}`}
-            onClick={() => {
-              // Touch to pass turn
-              if (activePlayer === idx) {
-                nextPlayer();
-              } else {
-                setActivePlayer(idx);
-              }
-            }}
             className={`
-              border-4 rounded-xl transition-all cursor-pointer touch-manipulation 
+              border-4 rounded-xl transition-all touch-manipulation 
               ${layout === 'grid' 
                 ? 'p-4 w-full max-w-sm mx-auto' 
                 : `p-3 ${positionClass} w-[clamp(260px,35vw,350px)] h-36`
