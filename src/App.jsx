@@ -585,34 +585,38 @@ export default function CommanderTracker() {
               <>
                 <div className="flex items-center justify-between w-full h-full">
                   <div className="flex-1">
-                    {activePlayer === idx && (
-                      <div className="text-xs font-semibold bg-white bg-opacity-30 rounded px-2 py-1 inline-block">
-                        ACTIVE
-                      </div>
-                    )}
                   </div>
                   
                   <div className="flex flex-col items-center">
-                    {/* Large life total - main focus */}
-                    <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-center mb-2">
+                    {/* Life total */}
+                    <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-center mb-2">
                       {player.life}
                     </div>
-                    <div className="flex gap-2">
+                    {/* Timer positioned below life total */}
+                    <div className="flex items-center gap-2 mb-2">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleLifeChange(idx, -1);
                         }}
-                        className="bg-red-600 hover:bg-red-700 p-2 rounded text-sm touch-manipulation w-8 h-8 flex items-center justify-center"
+                        className="bg-red-600 hover:bg-red-700 p-3 rounded text-lg touch-manipulation w-10 h-10 flex items-center justify-center"
                       >
                         -
                       </button>
+                      <div className="text-2xl sm:text-3xl font-mono font-bold text-center min-w-[120px]">
+                        {formatTime(player.time)}
+                        {player.time < 60 && player.time > 0 && (
+                          <div className="text-red-400 text-xs animate-pulse mt-1">
+                            LOW!
+                          </div>
+                        )}
+                      </div>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleLifeChange(idx, 1);
                         }}
-                        className="bg-green-600 hover:bg-green-700 p-2 rounded text-sm touch-manipulation w-8 h-8 flex items-center justify-center"
+                        className="bg-green-600 hover:bg-green-700 p-3 rounded text-lg touch-manipulation w-10 h-10 flex items-center justify-center"
                       >
                         +
                       </button>
@@ -620,15 +624,6 @@ export default function CommanderTracker() {
                   </div>
                   
                   <div className="flex-1 text-right">
-                    {/* Timer - smaller in table view */}
-                    <div className="text-2xl sm:text-3xl font-mono font-bold">
-                      {formatTime(player.time)}
-                    </div>
-                    {player.time < 60 && player.time > 0 && (
-                      <div className="text-red-400 text-xs animate-pulse">
-                        LOW!
-                      </div>
-                    )}
                   </div>
                 </div>
                 
@@ -640,10 +635,10 @@ export default function CommanderTracker() {
                       setCommanderDamagePlayerIndex(idx);
                       setShowCommanderDamageModal(true);
                     }}
-                    className="bg-gray-700 hover:bg-gray-600 text-white p-1 rounded text-xs transition-colors"
+                    className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs transition-colors"
                     title="Commander Damage"
                   >
-                    ⚔️
+                    dmg
                   </button>
                 </div>
               </>
@@ -660,7 +655,7 @@ export default function CommanderTracker() {
                   }}
                   className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded transition-colors"
                 >
-                  ⚔️ Commander Damage
+                  Commander Damage
                 </button>
               </div>
             )}
@@ -788,33 +783,33 @@ export default function CommanderTracker() {
               onClick={(e) => e.stopPropagation()}
             >
             
-            {/* Header */}
-            <div className="flex justify-between items-center p-2 border-b border-gray-600 flex-shrink-0">
-              <h2 className="text-sm font-bold text-white">
+            {/* Header with Life Display */}
+            <div className="flex items-center p-3 border-b border-gray-600 flex-shrink-0">
+              <h2 className="text-base font-bold text-white flex-1">
                 P{commanderDamagePlayerIndex + 1} Commander Damage
               </h2>
-              <button
-                onClick={() => {
-                  setShowCommanderDamageModal(false);
-                  setCommanderDamagePlayerIndex(null);
-                }}
-                className="text-gray-400 hover:text-white text-lg font-bold w-6 h-6 flex items-center justify-center"
-              >
-                ×
-              </button>
-            </div>
-
-            {/* Current Life Display */}
-            <div className="text-center p-2 border-b border-gray-600 flex-shrink-0">
-              <div className="text-xs text-gray-300">Life</div>
-              <div className="text-lg font-bold text-white">
-                {players[commanderDamagePlayerIndex]?.life || 0}
+              <div className="text-center flex-1">
+                <span className="text-sm text-gray-300 mr-2">Life:</span>
+                <span className="text-xl font-bold text-white">
+                  {players[commanderDamagePlayerIndex]?.life || 0}
+                </span>
+              </div>
+              <div className="flex-1 flex justify-end">
+                <button
+                  onClick={() => {
+                    setShowCommanderDamageModal(false);
+                    setCommanderDamagePlayerIndex(null);
+                  }}
+                  className="text-gray-400 hover:text-white text-xl font-bold w-8 h-8 flex items-center justify-center"
+                >
+                  ×
+                </button>
               </div>
             </div>
 
             {/* Commander Damage Options - Fill remaining space */}
-            <div className="flex-1 p-3 flex items-center justify-center overflow-hidden">
-              <div className="flex gap-2 justify-center items-center">
+            <div className="flex-1 p-4 flex items-center justify-center overflow-hidden">
+              <div className="flex gap-4 justify-center items-center">
                 {players.map((_, sourceIdx) => {
                   if (sourceIdx === commanderDamagePlayerIndex) return null;
                   const displayIdx = sourceIdx > commanderDamagePlayerIndex ? sourceIdx - 1 : sourceIdx;
@@ -827,24 +822,24 @@ export default function CommanderTracker() {
                         currentDamage >= 21 ? 'border-red-500' : 'border-gray-400'
                       }`}
                     >
-                      <div className="text-sm font-bold text-gray-800 mb-1">
+                      <div className="text-base font-bold text-gray-800 mb-2">
                         P{sourceIdx + 1}
                       </div>
-                      <div className="text-2xl font-bold mb-2 text-gray-800">
+                      <div className="text-3xl font-bold mb-3 text-gray-800">
                         {currentDamage}
                       </div>
                       {currentDamage >= 21 && (
-                        <div className="text-red-600 font-bold text-xs mb-1 animate-pulse">
+                        <div className="text-red-600 font-bold text-sm mb-2 animate-pulse">
                           LETHAL!
                         </div>
                       )}
-                      <div className="flex items-center justify-center gap-1 mb-2">
+                      <div className="flex items-center justify-center gap-2 mb-3">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, -1);
                           }}
-                          className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold w-6 h-6 rounded touch-manipulation transition-colors"
+                          className="bg-red-600 hover:bg-red-700 text-white text-base font-bold w-8 h-8 rounded touch-manipulation transition-colors"
                         >
                           -
                         </button>
@@ -853,18 +848,18 @@ export default function CommanderTracker() {
                             e.stopPropagation();
                             handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, 1);
                           }}
-                          className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold w-6 h-6 rounded touch-manipulation transition-colors"
+                          className="bg-green-600 hover:bg-green-700 text-white text-base font-bold w-8 h-8 rounded touch-manipulation transition-colors"
                         >
                           +
                         </button>
                       </div>
-                      <div className="flex justify-center gap-1">
+                      <div className="flex justify-center gap-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, 5);
                           }}
-                          className="bg-gray-700 hover:bg-gray-600 text-white px-1 py-0.5 rounded text-xs touch-manipulation transition-colors"
+                          className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-sm touch-manipulation transition-colors"
                         >
                           +5
                         </button>
@@ -873,7 +868,7 @@ export default function CommanderTracker() {
                             e.stopPropagation();
                             handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, 10);
                           }}
-                          className="bg-gray-700 hover:bg-gray-600 text-white px-1 py-0.5 rounded text-xs touch-manipulation transition-colors"
+                          className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-sm touch-manipulation transition-colors"
                         >
                           +10
                         </button>
