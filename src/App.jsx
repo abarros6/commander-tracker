@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Play, Pause, RotateCcw, Plus, Minus, Settings, Clock, Heart, Menu, Dice1, Dice6, RotateCw, Layout, ArrowRight } from 'lucide-react';
+import { PLAYER_COLORS_DEFAULT, PLAYER_COLORS_ACTIVE } from './utils/constants';
 
 export default function CommanderTracker() {
   // Game state
@@ -11,7 +12,18 @@ export default function CommanderTracker() {
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [showDiceMenu, setShowDiceMenu] = useState(false);
   const [layout, setLayout] = useState('table'); // 'table', 'grid'
+  const [isSelectingStartingPlayer, setIsSelectingStartingPlayer] = useState(false);
+  const [animatedActivePlayer, setAnimatedActivePlayer] = useState(0);
+  const [diceResult, setDiceResult] = useState(null);
+  const [coinResult, setCoinResult] = useState(null);
+  const [isRollingDice, setIsRollingDice] = useState(false);
+  const [isFlippingCoin, setIsFlippingCoin] = useState(false);
+  const [showCommanderDamageModal, setShowCommanderDamageModal] = useState(false);
+  const [commanderDamagePlayerIndex, setCommanderDamagePlayerIndex] = useState(null);
   const intervalRef = useRef(null);
+  const animationRef = useRef(null);
+  const diceAnimationRef = useRef(null);
+  const coinAnimationRef = useRef(null);
 
   // Game settings
   const [gameSettings, setGameSettings] = useState({
@@ -42,6 +54,15 @@ export default function CommanderTracker() {
     return () => {
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
+      }
+      if (animationRef.current) {
+        clearTimeout(animationRef.current);
+      }
+      if (diceAnimationRef.current) {
+        clearTimeout(diceAnimationRef.current);
+      }
+      if (coinAnimationRef.current) {
+        clearTimeout(coinAnimationRef.current);
       }
     };
   }, [isRunning, activePlayer]);
@@ -78,13 +99,69 @@ export default function CommanderTracker() {
   };
 
 
-  // Dice and coin functions
+  // Dice and coin functions with animations
   const rollDice = (sides) => {
-    return Math.floor(Math.random() * sides) + 1;
+    setIsRollingDice(true);
+    setDiceResult(null);
+    
+    let rolls = 0;
+    const maxRolls = 15;
+    let speed = 100;
+    
+    const animateRoll = () => {
+      const tempResult = Math.floor(Math.random() * sides) + 1;
+      setDiceResult(`D${sides}: ${tempResult}`);
+      rolls++;
+      
+      if (rolls > maxRolls * 0.7) {
+        speed += 50;
+      }
+      
+      if (rolls < maxRolls) {
+        diceAnimationRef.current = setTimeout(animateRoll, speed);
+      } else {
+        const finalResult = Math.floor(Math.random() * sides) + 1;
+        setDiceResult(`D${sides}: ${finalResult}`);
+        setTimeout(() => {
+          setIsRollingDice(false);
+          setTimeout(() => setDiceResult(null), 3000);
+        }, 500);
+      }
+    };
+    
+    animateRoll();
   };
 
   const flipCoin = () => {
-    return Math.random() < 0.5 ? 'Heads' : 'Tails';
+    setIsFlippingCoin(true);
+    setCoinResult(null);
+    
+    let flips = 0;
+    const maxFlips = 12;
+    let speed = 120;
+    
+    const animateFlip = () => {
+      const tempResult = Math.random() < 0.5 ? 'Heads' : 'Tails';
+      setCoinResult(`Coin: ${tempResult}`);
+      flips++;
+      
+      if (flips > maxFlips * 0.6) {
+        speed += 60;
+      }
+      
+      if (flips < maxFlips) {
+        coinAnimationRef.current = setTimeout(animateFlip, speed);
+      } else {
+        const finalResult = Math.random() < 0.5 ? 'Heads' : 'Tails';
+        setCoinResult(`Coin: ${finalResult}`);
+        setTimeout(() => {
+          setIsFlippingCoin(false);
+          setTimeout(() => setCoinResult(null), 3000);
+        }, 500);
+      }
+    };
+    
+    animateFlip();
   };
 
   const nextPlayer = () => {
@@ -124,34 +201,97 @@ export default function CommanderTracker() {
     const newPlayers = createPlayers(settings.numberOfPlayers, settings.startingLife, timeInSeconds);
     setPlayers(newPlayers);
     
-    // Randomly choose starting player
-    const randomStartingPlayer = Math.floor(Math.random() * settings.numberOfPlayers);
-    setActivePlayer(randomStartingPlayer);
-    
     setIsRunning(false);
     setGameStarted(true);
     setShowSetup(false);
+    
+    // Start the starting player selection animation
+    setIsSelectingStartingPlayer(true);
+    
+    let animationSpeed = 100; // Start fast
+    let currentPlayer = 0;
+    let iterations = 0;
+    const totalIterations = 20; // Total animation cycles
+    
+    const animateSelection = () => {
+      setAnimatedActivePlayer(currentPlayer);
+      currentPlayer = (currentPlayer + 1) % settings.numberOfPlayers;
+      iterations++;
+      
+      // Gradually slow down the animation
+      if (iterations > totalIterations * 0.6) {
+        animationSpeed += 50;
+      }
+      
+      if (iterations < totalIterations) {
+        animationRef.current = setTimeout(animateSelection, animationSpeed);
+      } else {
+        // Animation finished, pick final starting player
+        const finalStartingPlayer = Math.floor(Math.random() * settings.numberOfPlayers);
+        setAnimatedActivePlayer(finalStartingPlayer);
+        setActivePlayer(finalStartingPlayer);
+        
+        // End animation after a brief pause
+        setTimeout(() => {
+          setIsSelectingStartingPlayer(false);
+        }, 1000);
+      }
+    };
+    
+    animateSelection();
   };
 
   const resetGame = () => {
     setIsRunning(false);
+    
+    // Clear any existing animation
+    if (animationRef.current) {
+      clearTimeout(animationRef.current);
+    }
+    
     const timeInSeconds = gameSettings.timerMinutes * 60;
     const newPlayers = createPlayers(gameSettings.numberOfPlayers, gameSettings.startingLife, timeInSeconds);
     setPlayers(newPlayers);
     
-    // Randomly choose starting player again
-    const randomStartingPlayer = Math.floor(Math.random() * gameSettings.numberOfPlayers);
-    setActivePlayer(randomStartingPlayer);
+    // Start the starting player selection animation
+    setIsSelectingStartingPlayer(true);
+    
+    let animationSpeed = 100;
+    let currentPlayer = 0;
+    let iterations = 0;
+    const totalIterations = 20;
+    
+    const animateSelection = () => {
+      setAnimatedActivePlayer(currentPlayer);
+      currentPlayer = (currentPlayer + 1) % gameSettings.numberOfPlayers;
+      iterations++;
+      
+      if (iterations > totalIterations * 0.6) {
+        animationSpeed += 50;
+      }
+      
+      if (iterations < totalIterations) {
+        animationRef.current = setTimeout(animateSelection, animationSpeed);
+      } else {
+        const finalStartingPlayer = Math.floor(Math.random() * gameSettings.numberOfPlayers);
+        setAnimatedActivePlayer(finalStartingPlayer);
+        setActivePlayer(finalStartingPlayer);
+        
+        setTimeout(() => {
+          setIsSelectingStartingPlayer(false);
+        }, 1000);
+      }
+    };
+    
+    animateSelection();
   };
 
   const getPlayerColor = (idx) => {
-    const colors = [
-      'bg-red-500 border-red-600',
-      'bg-blue-500 border-blue-600',
-      'bg-green-500 border-green-600',
-      'bg-purple-500 border-purple-600'
-    ];
-    return colors[idx % colors.length];
+    return PLAYER_COLORS_ACTIVE[idx % PLAYER_COLORS_ACTIVE.length];
+  };
+
+  const getPlayerColorDefault = (idx) => {
+    return PLAYER_COLORS_DEFAULT[idx % PLAYER_COLORS_DEFAULT.length];
   };
 
   const getPlayerColorLight = (idx) => {
@@ -309,8 +449,11 @@ export default function CommanderTracker() {
   }
 
   return (
+    <>
     <div 
-      className="min-h-screen bg-gray-900 text-white relative overflow-hidden"
+      className={`min-h-screen bg-gray-900 text-white relative overflow-hidden transition-opacity ${
+        showCommanderDamageModal ? 'opacity-30' : 'opacity-100'
+      }`}
       onClick={() => {
         setShowGameMenu(false);
         setShowDiceMenu(false);
@@ -411,6 +554,7 @@ export default function CommanderTracker() {
           return (
           <div
             key={player.id}
+            id={`card-${idx + 1}`}
             onClick={() => {
               // Touch to pass turn
               if (activePlayer === idx) {
@@ -420,15 +564,15 @@ export default function CommanderTracker() {
               }
             }}
             className={`
-              border-4 rounded-xl transition-all cursor-pointer touch-manipulation
+              border-4 rounded-xl transition-all cursor-pointer touch-manipulation 
               ${layout === 'grid' 
                 ? 'p-4 w-full max-w-sm mx-auto' 
-                : `p-4 ${positionClass} w-[clamp(300px,45vw,450px)]`
+                : `p-3 ${positionClass} w-[clamp(260px,35vw,350px)] h-36`
               }
               ${rotationClass}
-              ${activePlayer === idx
+              ${(isSelectingStartingPlayer ? animatedActivePlayer === idx : activePlayer === idx)
                 ? `${getPlayerColor(idx)} shadow-lg`
-                : 'bg-gray-800 border-gray-700'
+                : getPlayerColorDefault(idx)
               }
             `}
           >
@@ -549,56 +693,37 @@ export default function CommanderTracker() {
                     )}
                   </div>
                 </div>
+                
+                {/* Commander Damage Button for Table View */}
+                <div className="absolute top-1 right-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setCommanderDamagePlayerIndex(idx);
+                      setShowCommanderDamageModal(true);
+                    }}
+                    className="bg-gray-700 hover:bg-gray-600 text-white p-1 rounded text-xs transition-colors"
+                    title="Commander Damage"
+                  >
+                    ⚔️
+                  </button>
+                </div>
               </>
             )}
 
-            {/* Commander Damage - only in grid layout */}
-            {layout === 'grid' && showCommanderDamage && (
+            {/* Commander Damage Button for Grid View */}
+            {layout === 'grid' && (
               <div className="border-t border-gray-600 pt-3">
-                <div className="text-xs text-center mb-2 opacity-75">
-                  Commander Damage Taken
-                </div>
-                <div className={`grid gap-2 ${gameSettings.numberOfPlayers === 3 ? 'grid-cols-2' : 'grid-cols-3'}`}>
-                  {players.map((_, sourceIdx) => {
-                    if (sourceIdx === idx) return null;
-                    const displayIdx = sourceIdx > idx ? sourceIdx - 1 : sourceIdx;
-                    return (
-                      <div
-                        key={sourceIdx}
-                        className={`${getPlayerColorLight(sourceIdx)} rounded p-2 text-center`}
-                      >
-                        <div className="text-xs opacity-75 text-gray-700">
-                          P{sourceIdx + 1}
-                        </div>
-                        <div className="flex items-center justify-center gap-1">
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCommanderDamage(idx, displayIdx, -1);
-                            }}
-                            className="bg-gray-700 hover:bg-gray-600 text-white rounded px-1 text-xs touch-manipulation"
-                          >
-                            -
-                          </button>
-                          <span className={`font-bold text-sm ${
-                            player.commanderDamage[displayIdx] >= 21 ? 'text-red-600' : 'text-gray-800'
-                          }`}>
-                            {player.commanderDamage[displayIdx]}
-                          </span>
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleCommanderDamage(idx, displayIdx, 1);
-                            }}
-                            className="bg-gray-700 hover:bg-gray-600 text-white rounded px-1 text-xs touch-manipulation"
-                          >
-                            +
-                          </button>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setCommanderDamagePlayerIndex(idx);
+                    setShowCommanderDamageModal(true);
+                  }}
+                  className="w-full bg-purple-600 hover:bg-purple-700 text-white py-2 px-4 rounded transition-colors"
+                >
+                  ⚔️ Commander Damage
+                </button>
               </div>
             )}
           </div>
@@ -692,6 +817,24 @@ export default function CommanderTracker() {
           </button>
         </div>
       )}
+    </div>
+
+    {/* Overlays outside dimmed content */}
+    {/* Dice/Coin Animation Results */}
+      {(diceResult || coinResult) && (
+        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-gray-800 border-4 border-yellow-500 rounded-lg p-6 text-center shadow-xl">
+          <div className={`text-4xl font-bold mb-2 ${
+            isRollingDice || isFlippingCoin ? 'animate-pulse text-yellow-400' : 'text-white'
+          }`}>
+            {diceResult || coinResult}
+          </div>
+          {(isRollingDice || isFlippingCoin) && (
+            <div className="text-sm text-gray-300 animate-bounce">
+              {isRollingDice ? 'Rolling...' : 'Flipping...'}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* Dice Menu */}
       {showDiceMenu && (
@@ -714,10 +857,7 @@ export default function CommanderTracker() {
                 {[4, 6, 8, 10, 12, 20].map(sides => (
                   <button
                     key={sides}
-                    onClick={() => {
-                      const result = rollDice(sides);
-                      alert(`D${sides}: ${result}`);
-                    }}
+                    onClick={() => rollDice(sides)}
                     className="bg-blue-600 hover:bg-blue-700 p-3 rounded-lg text-sm font-bold flex flex-col items-center"
                   >
                     <Dice1 size={20} />
@@ -731,10 +871,7 @@ export default function CommanderTracker() {
             <div>
               <h3 className="text-sm font-semibold mb-3">Coin Flip</h3>
               <button
-                onClick={() => {
-                  const result = flipCoin();
-                  alert(`Coin Flip: ${result}`);
-                }}
+                onClick={() => flipCoin()}
                 className="w-full bg-yellow-600 hover:bg-yellow-700 p-3 rounded-lg font-bold flex items-center justify-center"
               >
                 <RotateCw className="mr-2" size={20} />
@@ -754,6 +891,140 @@ export default function CommanderTracker() {
               .map((p, index) => (p.life <= 0 ? `Player ${index + 1}` : null))
               .filter(Boolean)
               .join(', ')}
+          </div>
+        </div>
+      )}
+
+      {/* Commander Damage Modal Overlay */}
+      {showCommanderDamageModal && commanderDamagePlayerIndex !== null && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center pointer-events-none"
+          onClick={() => {
+            setShowCommanderDamageModal(false);
+            setCommanderDamagePlayerIndex(null);
+          }}
+        >
+          {/* Container that handles rotation and sizing */}
+          <div className={`pointer-events-auto ${
+            layout === 'table' ? (
+              gameSettings.numberOfPlayers === 3 ? (
+                commanderDamagePlayerIndex === 0 ? '' : // bottom player - normal
+                commanderDamagePlayerIndex === 1 ? 'rotate-[135deg]' : // top-left
+                'rotate-[-135deg]' // top-right
+              ) : (
+                commanderDamagePlayerIndex === 0 ? 'rotate-90' : // left-top
+                commanderDamagePlayerIndex === 1 ? 'rotate-90' : // left-bottom  
+                commanderDamagePlayerIndex === 2 ? 'rotate-[-90deg]' : // right-top
+                'rotate-[-90deg]' // right-bottom
+              )
+            ) : '' // grid layout - no rotation
+          }`}>
+            {/* Modal content - responsive sizing */}
+            <div 
+              className="bg-gray-800 rounded-lg shadow-2xl border-4 border-gray-600 flex flex-col"
+              style={{
+                width: 'min(80vw, 600px)',
+                height: 'min(60vh, 400px)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+            
+            {/* Header */}
+            <div className="flex justify-between items-center p-2 border-b border-gray-600 flex-shrink-0">
+              <h2 className="text-sm font-bold text-white">
+                P{commanderDamagePlayerIndex + 1} Commander Damage
+              </h2>
+              <button
+                onClick={() => {
+                  setShowCommanderDamageModal(false);
+                  setCommanderDamagePlayerIndex(null);
+                }}
+                className="text-gray-400 hover:text-white text-lg font-bold w-6 h-6 flex items-center justify-center"
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Current Life Display */}
+            <div className="text-center p-2 border-b border-gray-600 flex-shrink-0">
+              <div className="text-xs text-gray-300">Life</div>
+              <div className="text-lg font-bold text-white">
+                {players[commanderDamagePlayerIndex]?.life || 0}
+              </div>
+            </div>
+
+            {/* Commander Damage Options - Fill remaining space */}
+            <div className="flex-1 p-3 flex items-center justify-center overflow-hidden">
+              <div className="flex gap-2 justify-center items-center">
+                {players.map((_, sourceIdx) => {
+                  if (sourceIdx === commanderDamagePlayerIndex) return null;
+                  const displayIdx = sourceIdx > commanderDamagePlayerIndex ? sourceIdx - 1 : sourceIdx;
+                  const currentDamage = players[commanderDamagePlayerIndex]?.commanderDamage[displayIdx] || 0;
+                  
+                  return (
+                    <div
+                      key={sourceIdx}
+                      className={`${getPlayerColorLight(sourceIdx)} rounded-lg p-2 text-center border-2 flex-1 max-w-[100px] ${
+                        currentDamage >= 21 ? 'border-red-500' : 'border-gray-400'
+                      }`}
+                    >
+                      <div className="text-sm font-bold text-gray-800 mb-1">
+                        P{sourceIdx + 1}
+                      </div>
+                      <div className="text-2xl font-bold mb-2 text-gray-800">
+                        {currentDamage}
+                      </div>
+                      {currentDamage >= 21 && (
+                        <div className="text-red-600 font-bold text-xs mb-1 animate-pulse">
+                          LETHAL!
+                        </div>
+                      )}
+                      <div className="flex items-center justify-center gap-1 mb-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, -1);
+                          }}
+                          className="bg-red-600 hover:bg-red-700 text-white text-sm font-bold w-6 h-6 rounded touch-manipulation transition-colors"
+                        >
+                          -
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, 1);
+                          }}
+                          className="bg-green-600 hover:bg-green-700 text-white text-sm font-bold w-6 h-6 rounded touch-manipulation transition-colors"
+                        >
+                          +
+                        </button>
+                      </div>
+                      <div className="flex justify-center gap-1">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, 5);
+                          }}
+                          className="bg-gray-700 hover:bg-gray-600 text-white px-1 py-0.5 rounded text-xs touch-manipulation transition-colors"
+                        >
+                          +5
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, 10);
+                          }}
+                          className="bg-gray-700 hover:bg-gray-600 text-white px-1 py-0.5 rounded text-xs touch-manipulation transition-colors"
+                        >
+                          +10
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+            </div>
           </div>
         </div>
       )}
@@ -786,6 +1057,6 @@ export default function CommanderTracker() {
           </div>
         </div>
       )}
-    </div>
+    </>
   );
 }
