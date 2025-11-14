@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Plus, Minus, Settings, Clock, Heart, Menu, ArrowRight } from 'lucide-react';
+import { Play, Pause, RotateCcw, Plus, Minus, Settings, Clock, Heart, Menu, ArrowRight, ArrowLeft } from 'lucide-react';
 import { PLAYER_COLORS_DEFAULT, PLAYER_COLORS_ACTIVE } from './utils/constants';
 
 export default function CommanderTracker() {
@@ -215,6 +215,25 @@ export default function CommanderTracker() {
       nextPlayerIndex = clockwiseOrder[nextIndex];
     }
     setActivePlayer(nextPlayerIndex);
+  };
+
+  const previousPlayer = () => {
+    // Counter-clockwise order (reverse of clockwise)
+    let previousPlayerIndex;
+    if (gameSettings.numberOfPlayers === 3) {
+      // 3-player counter-clockwise: 0 (left-top) ← 2 (right-top) ← 1 (left-bottom) ← 0
+      const clockwiseOrder = [0, 2, 1];
+      const currentIndex = clockwiseOrder.indexOf(activePlayer);
+      const previousIndex = (currentIndex - 1 + 3) % 3;
+      previousPlayerIndex = clockwiseOrder[previousIndex];
+    } else {
+      // 4-player counter-clockwise: 0 (left-top) ← 2 (right-top) ← 3 (right-bottom) ← 1 (left-bottom) ← 0
+      const clockwiseOrder = [0, 2, 3, 1];
+      const currentIndex = clockwiseOrder.indexOf(activePlayer);
+      const previousIndex = (currentIndex - 1 + 4) % 4;
+      previousPlayerIndex = clockwiseOrder[previousIndex];
+    }
+    setActivePlayer(previousPlayerIndex);
   };
 
   const createPlayers = (numberOfPlayers, startingLife, timeInSeconds) => {
@@ -531,6 +550,17 @@ export default function CommanderTracker() {
           }`}
         >
           {isRunning ? <Pause size={24} /> : <Play size={24} />}
+        </button>
+        
+        {/* Previous Player Button */}
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            previousPlayer();
+          }}
+          className="bg-orange-600 hover:bg-orange-700 p-3 rounded-full shadow-lg touch-manipulation"
+        >
+          <ArrowLeft size={18} />
         </button>
         
         {/* Next Player Button */}
