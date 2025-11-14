@@ -20,6 +20,7 @@ export default function CommanderTracker() {
   const [isFlippingCoin, setIsFlippingCoin] = useState(false);
   const [showCommanderDamageModal, setShowCommanderDamageModal] = useState(false);
   const [commanderDamagePlayerIndex, setCommanderDamagePlayerIndex] = useState(null);
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const intervalRef = useRef(null);
   const animationRef = useRef(null);
   const diceAnimationRef = useRef(null);
@@ -163,6 +164,35 @@ export default function CommanderTracker() {
     
     animateFlip();
   };
+
+  // Fullscreen functions
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().then(() => {
+        setIsFullscreen(true);
+      }).catch(() => {
+        // Fallback for older browsers
+        console.log('Fullscreen not supported');
+      });
+    } else {
+      document.exitFullscreen().then(() => {
+        setIsFullscreen(false);
+      });
+    }
+  };
+
+  // Listen for fullscreen changes
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+    
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, []);
 
   const nextPlayer = () => {
     // Clockwise order for 4 players: left-top → left-bottom → right-bottom → right-top
@@ -451,7 +481,7 @@ export default function CommanderTracker() {
   return (
     <>
     <div 
-      className={`min-h-screen bg-gray-900 text-white relative overflow-hidden transition-opacity ${
+      className={`h-screen w-screen bg-gray-900 text-white relative overflow-hidden transition-opacity ${
         showCommanderDamageModal ? 'opacity-30' : 'opacity-100'
       }`}
       onClick={() => {
@@ -513,12 +543,12 @@ export default function CommanderTracker() {
       {/* Players Layout */}
       <div className={`
         ${layout === 'grid' 
-          ? `grid gap-3 p-4 min-h-screen ${
+          ? `grid gap-3 p-4 h-screen w-screen ${
               gameSettings.numberOfPlayers === 3 
                 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' 
                 : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4'
             } place-items-center`
-          : 'relative min-h-screen overflow-hidden'
+          : 'relative h-screen w-screen overflow-hidden'
         }
       `}>
         {players.slice(0, gameSettings.numberOfPlayers).map((player, idx) => {
@@ -793,6 +823,28 @@ export default function CommanderTracker() {
               className="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded text-sm"
             >
               Roll Dice / Flip Coin
+            </button>
+          </div>
+
+          {/* Fullscreen Toggle */}
+          <div className="mb-4">
+            <h3 className="text-sm font-semibold mb-2">Display</h3>
+            <button
+              onClick={toggleFullscreen}
+              className={`w-full p-2 rounded text-sm flex items-center justify-center transition-colors ${
+                isFullscreen 
+                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                  : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
+              }`}
+            >
+              <svg className="mr-2" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                {isFullscreen ? (
+                  <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
+                ) : (
+                  <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                )}
+              </svg>
+              {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
             </button>
           </div>
 
