@@ -696,7 +696,7 @@ export default function CommanderTracker() {
               className="bg-gray-800 rounded-lg shadow-2xl border-4 border-gray-600 flex flex-col"
               style={{
                 width: 'min(125vw, 1000px)',
-                height: 'min(70vh, 450px)'
+                height: 'min(50vh, 40vh)'
               }}
               onClick={(e) => e.stopPropagation()}
             >
