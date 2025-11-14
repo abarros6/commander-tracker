@@ -9,7 +9,8 @@ export default function CommanderTracker() {
   const [activePlayer, setActivePlayer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [showCommanderDamage, setShowCommanderDamage] = useState(false);
-  const [showGameMenu, setShowGameMenu] = useState(false);
+  const [settingsButtonState, setSettingsButtonState] = useState('normal'); // 'normal', 'yellow', 'red'
+  const settingsTimeoutRef = useRef(null);
   const [isSelectingStartingPlayer, setIsSelectingStartingPlayer] = useState(false);
   const [animatedActivePlayer, setAnimatedActivePlayer] = useState(0);
   const [showCommanderDamageModal, setShowCommanderDamageModal] = useState(false);
@@ -50,6 +51,9 @@ export default function CommanderTracker() {
       }
       if (animationRef.current) {
         clearTimeout(animationRef.current);
+      }
+      if (settingsTimeoutRef.current) {
+        clearTimeout(settingsTimeoutRef.current);
       }
     };
   }, [isRunning, activePlayer]);
@@ -141,6 +145,29 @@ export default function CommanderTracker() {
       document.removeEventListener('msfullscreenchange', handleFullscreenChange);
     };
   }, []);
+
+  const handleSettingsButtonClick = () => {
+    // Clear existing timeout
+    if (settingsTimeoutRef.current) {
+      clearTimeout(settingsTimeoutRef.current);
+    }
+
+    if (settingsButtonState === 'normal') {
+      setSettingsButtonState('yellow');
+    } else if (settingsButtonState === 'yellow') {
+      setSettingsButtonState('red');
+    } else if (settingsButtonState === 'red') {
+      // Go to game settings
+      setShowSetup(true);
+      setSettingsButtonState('normal');
+      return; // Don't set timeout if going to settings
+    }
+
+    // Set timeout to reset to normal after 5 seconds
+    settingsTimeoutRef.current = setTimeout(() => {
+      setSettingsButtonState('normal');
+    }, 5000);
+  };
 
   const nextPlayer = () => {
     // Clockwise order for 4 players: left-top → right-top → right-bottom → left-bottom
@@ -429,9 +456,7 @@ export default function CommanderTracker() {
       className={`h-screen w-screen bg-gray-900 text-white relative overflow-hidden transition-opacity ${
         showCommanderDamageModal ? 'opacity-30' : 'opacity-100'
       }`}
-      onClick={() => {
-        setShowGameMenu(false);
-      }}
+      onClick={() => {}}
     >
       {/* Center Controls - Back to original center positioning */}
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-3">
@@ -439,9 +464,13 @@ export default function CommanderTracker() {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            setShowGameMenu(!showGameMenu);
+            handleSettingsButtonClick();
           }}
-          className="bg-gray-800 hover:bg-gray-700 p-3 rounded-full shadow-lg touch-manipulation"
+          className={`p-3 rounded-full shadow-lg touch-manipulation transition-colors ${
+            settingsButtonState === 'normal' ? 'bg-gray-800 hover:bg-gray-700' :
+            settingsButtonState === 'yellow' ? 'bg-yellow-600 hover:bg-yellow-700' :
+            'bg-red-600 hover:bg-red-700'
+          }`}
         >
           <Menu size={18} />
         </button>
@@ -592,50 +621,6 @@ export default function CommanderTracker() {
         })}
       </div>
 
-      {/* Floating Game Menu */}
-      {showGameMenu && (
-        <div 
-          className="fixed top-16 right-4 z-50 bg-gray-800 rounded-lg shadow-xl p-4 w-64"
-          onClick={(e) => e.stopPropagation()}
-        >
-
-
-
-          {/* Fullscreen Toggle */}
-          <div className="mb-4">
-            <h3 className="text-sm font-semibold mb-2">Display</h3>
-            <button
-              onClick={toggleFullscreen}
-              className={`w-full p-2 rounded text-sm flex items-center justify-center transition-colors ${
-                isFullscreen 
-                  ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                  : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-              }`}
-            >
-              <svg className="mr-2" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                {isFullscreen ? (
-                  <path d="M5 16h3v3h2v-5H5v2zm3-8H5v2h5V5H8v3zm6 11h2v-3h3v-2h-5v5zm2-11V5h-2v5h5V8h-3z"/>
-                ) : (
-                  <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-                )}
-              </svg>
-              {isFullscreen ? 'Exit Fullscreen' : 'Enter Fullscreen'}
-            </button>
-          </div>
-
-          {/* Settings */}
-          <button
-            onClick={() => {
-              setShowSetup(true);
-              setShowGameMenu(false);
-            }}
-            className="w-full bg-gray-700 hover:bg-gray-600 p-2 rounded text-sm flex items-center justify-center"
-          >
-            <Settings className="mr-2" size={16} />
-            Game Settings
-          </button>
-        </div>
-      )}
     </div>
 
 
