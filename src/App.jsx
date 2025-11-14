@@ -11,6 +11,8 @@ export default function CommanderTracker() {
   const [showCommanderDamage, setShowCommanderDamage] = useState(false);
   const [settingsButtonState, setSettingsButtonState] = useState('normal'); // 'normal', 'yellow', 'red'
   const settingsTimeoutRef = useRef(null);
+  const [resetButtonState, setResetButtonState] = useState('normal'); // 'normal', 'orange', 'red'
+  const resetTimeoutRef = useRef(null);
   const [isSelectingStartingPlayer, setIsSelectingStartingPlayer] = useState(false);
   const [animatedActivePlayer, setAnimatedActivePlayer] = useState(0);
   const [showCommanderDamageModal, setShowCommanderDamageModal] = useState(false);
@@ -54,6 +56,9 @@ export default function CommanderTracker() {
       }
       if (settingsTimeoutRef.current) {
         clearTimeout(settingsTimeoutRef.current);
+      }
+      if (resetTimeoutRef.current) {
+        clearTimeout(resetTimeoutRef.current);
       }
     };
   }, [isRunning, activePlayer]);
@@ -166,6 +171,29 @@ export default function CommanderTracker() {
     // Set timeout to reset to normal after 5 seconds
     settingsTimeoutRef.current = setTimeout(() => {
       setSettingsButtonState('normal');
+    }, 5000);
+  };
+
+  const handleResetButtonClick = () => {
+    // Clear existing timeout
+    if (resetTimeoutRef.current) {
+      clearTimeout(resetTimeoutRef.current);
+    }
+
+    if (resetButtonState === 'normal') {
+      setResetButtonState('orange');
+    } else if (resetButtonState === 'orange') {
+      setResetButtonState('red');
+    } else if (resetButtonState === 'red') {
+      // Actually reset the game
+      resetGame();
+      setResetButtonState('normal');
+      return; // Don't set timeout if resetting
+    }
+
+    // Set timeout to reset to normal after 5 seconds
+    resetTimeoutRef.current = setTimeout(() => {
+      setResetButtonState('normal');
     }, 5000);
   };
 
@@ -479,9 +507,13 @@ export default function CommanderTracker() {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            resetGame();
+            handleResetButtonClick();
           }}
-          className="bg-purple-600 hover:bg-purple-700 p-3 rounded-full shadow-lg touch-manipulation"
+          className={`p-3 rounded-full shadow-lg touch-manipulation transition-colors ${
+            resetButtonState === 'normal' ? 'bg-purple-600 hover:bg-purple-700' :
+            resetButtonState === 'orange' ? 'bg-orange-600 hover:bg-orange-700' :
+            'bg-red-600 hover:bg-red-700'
+          }`}
         >
           <RotateCcw size={18} />
         </button>
@@ -663,8 +695,8 @@ export default function CommanderTracker() {
             <div 
               className="bg-gray-800 rounded-lg shadow-2xl border-4 border-gray-600 flex flex-col"
               style={{
-                width: 'min(80vw, 600px)',
-                height: 'min(60vh, 400px)'
+                width: 'min(125vw, 1000px)',
+                height: 'min(70vh, 450px)'
               }}
               onClick={(e) => e.stopPropagation()}
             >
@@ -676,7 +708,7 @@ export default function CommanderTracker() {
               </h2>
               <div className="text-center flex-1">
                 <span className="text-sm text-gray-300 mr-2">Life:</span>
-                <span className="text-xl font-bold text-white">
+                <span className="text-2xl font-bold text-white">
                   {players[commanderDamagePlayerIndex]?.life || 0}
                 </span>
               </div>
@@ -694,8 +726,8 @@ export default function CommanderTracker() {
             </div>
 
             {/* Commander Damage Options - Fill remaining space */}
-            <div className="flex-1 p-4 flex items-center justify-center overflow-hidden">
-              <div className="flex gap-4 justify-center items-center">
+            <div className="flex-1 p-2 sm:p-4 md:p-6 flex items-center justify-center overflow-hidden">
+              <div className="flex gap-2 sm:gap-4 md:gap-6 justify-center items-center">
                 {players.map((_, sourceIdx) => {
                   if (sourceIdx === commanderDamagePlayerIndex) return null;
                   const displayIdx = sourceIdx > commanderDamagePlayerIndex ? sourceIdx - 1 : sourceIdx;
@@ -704,7 +736,7 @@ export default function CommanderTracker() {
                   return (
                     <div
                       key={sourceIdx}
-                      className={`${getPlayerColorLight(sourceIdx)} rounded-lg p-2 text-center border-2 flex-1 max-w-[100px] ${
+                      className={`${getPlayerColorLight(sourceIdx)} rounded-lg p-3 sm:p-4 md:p-5 text-center border-2 flex-1 min-w-[120px] sm:min-w-[140px] md:min-w-[160px] max-w-[140px] sm:max-w-[160px] md:max-w-[180px] ${
                         currentDamage >= 21 ? 'border-red-500' : 'border-gray-400'
                       }`}
                     >
@@ -719,44 +751,44 @@ export default function CommanderTracker() {
                           LETHAL!
                         </div>
                       )}
-                      <div className="flex items-center justify-center gap-2 mb-3">
+                      <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 mb-3">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, -1);
                           }}
-                          className="bg-red-600 hover:bg-red-700 text-white text-base font-bold w-8 h-8 rounded touch-manipulation transition-colors"
+                          className="bg-gray-800 hover:bg-gray-700 border-2 border-red-600 text-white text-base sm:text-lg md:text-xl font-bold w-9 h-12 sm:w-10 sm:h-14 md:w-11 md:h-16 rounded touch-manipulation transition-colors"
                         >
-                          -
+                          -1
                         </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, 1);
                           }}
-                          className="bg-green-600 hover:bg-green-700 text-white text-base font-bold w-8 h-8 rounded touch-manipulation transition-colors"
+                          className="bg-gray-800 hover:bg-gray-700 border-2 border-green-600 text-white text-base sm:text-lg md:text-xl font-bold w-9 h-12 sm:w-10 sm:h-14 md:w-11 md:h-16 rounded touch-manipulation transition-colors"
                         >
-                          +
+                          +1
                         </button>
                       </div>
-                      <div className="flex justify-center gap-2">
+                      <div className="flex justify-center gap-2 sm:gap-3 md:gap-4">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, -5);
+                          }}
+                          className="bg-red-600 hover:bg-red-700 border-2 border-red-600 text-white px-3 py-2.5 sm:px-4 sm:py-3 md:px-5 md:py-4 rounded text-base sm:text-lg md:text-xl font-bold touch-manipulation transition-colors"
+                        >
+                          -5
+                        </button>
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, 5);
                           }}
-                          className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-sm touch-manipulation transition-colors"
+                          className="bg-green-600 hover:bg-green-700 border-2 border-green-600 text-white px-3 py-2.5 sm:px-4 sm:py-3 md:px-5 md:py-4 rounded text-base sm:text-lg md:text-xl font-bold touch-manipulation transition-colors"
                         >
                           +5
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, 10);
-                          }}
-                          className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-sm touch-manipulation transition-colors"
-                        >
-                          +10
                         </button>
                       </div>
                     </div>
