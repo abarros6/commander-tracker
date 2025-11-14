@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Plus, Minus, Settings, Clock, Heart, Menu, ArrowRight, ArrowLeft } from 'lucide-react';
-import { PLAYER_COLORS_DEFAULT, PLAYER_COLORS_ACTIVE } from './utils/constants';
+import { Play, Pause, RotateCcw, Settings, Clock, Heart, Menu, ArrowRight, ArrowLeft } from 'lucide-react';
+import { PLAYER_COLORS_DEFAULT, PLAYER_COLORS_ACTIVE, PLAYER_COLORS_COMMANDER_DAMAGE } from './utils/constants';
 
 export default function CommanderTracker() {
   // Game state
@@ -8,7 +8,6 @@ export default function CommanderTracker() {
   const [showSetup, setShowSetup] = useState(false);
   const [activePlayer, setActivePlayer] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
-  const [showCommanderDamage, setShowCommanderDamage] = useState(false);
   const [settingsButtonState, setSettingsButtonState] = useState('normal'); // 'normal', 'yellow', 'red'
   const settingsTimeoutRef = useRef(null);
   const [resetButtonState, setResetButtonState] = useState('normal'); // 'normal', 'orange', 'red'
@@ -17,9 +16,10 @@ export default function CommanderTracker() {
   const [animatedActivePlayer, setAnimatedActivePlayer] = useState(0);
   const [showCommanderDamageModal, setShowCommanderDamageModal] = useState(false);
   const [commanderDamagePlayerIndex, setCommanderDamagePlayerIndex] = useState(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const intervalRef = useRef(null);
   const animationRef = useRef(null);
+  const holdIntervalRef = useRef(null);
+  const holdTimeoutRef = useRef(null);
 
   // Game settings
   const [gameSettings, setGameSettings] = useState({
@@ -75,6 +75,24 @@ export default function CommanderTracker() {
     ));
   };
 
+  const startHoldRepeat = (playerIdx, change) => {
+    // Clear any existing intervals
+    clearInterval(holdIntervalRef.current);
+    clearTimeout(holdTimeoutRef.current);
+    
+    // Initial delay before starting rapid repeat
+    holdTimeoutRef.current = setTimeout(() => {
+      holdIntervalRef.current = setInterval(() => {
+        handleLifeChange(playerIdx, change);
+      }, 150); // Repeat every 150ms for fast incrementing
+    }, 500); // Wait 500ms before starting rapid repeat
+  };
+
+  const stopHoldRepeat = () => {
+    clearInterval(holdIntervalRef.current);
+    clearTimeout(holdTimeoutRef.current);
+  };
+
   const handleCommanderDamage = (playerIdx, sourceIdx, change) => {
     setPlayers(prev => prev.map((p, idx) => {
       if (idx === playerIdx) {
@@ -96,60 +114,7 @@ export default function CommanderTracker() {
 
 
 
-  // Fullscreen functions
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      const element = document.documentElement;
-      
-      // Try different fullscreen methods for broader compatibility
-      if (element.requestFullscreen) {
-        element.requestFullscreen().then(() => {
-          setIsFullscreen(true);
-        }).catch(() => {
-          console.log('Fullscreen not supported');
-        });
-      } else if (element.webkitRequestFullscreen) {
-        // Safari iOS
-        element.webkitRequestFullscreen();
-        setIsFullscreen(true);
-      } else if (element.msRequestFullscreen) {
-        // IE/Edge
-        element.msRequestFullscreen();
-        setIsFullscreen(true);
-      } else {
-        console.log('Fullscreen not supported');
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen().then(() => {
-          setIsFullscreen(false);
-        });
-      } else if (document.webkitExitFullscreen) {
-        document.webkitExitFullscreen();
-        setIsFullscreen(false);
-      } else if (document.msExitFullscreen) {
-        document.msExitFullscreen();
-        setIsFullscreen(false);
-      }
-    }
-  };
 
-  // Listen for fullscreen changes
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!(document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement));
-    };
-    
-    document.addEventListener('fullscreenchange', handleFullscreenChange);
-    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
-    document.addEventListener('msfullscreenchange', handleFullscreenChange);
-    
-    return () => {
-      document.removeEventListener('fullscreenchange', handleFullscreenChange);
-      document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
-      document.removeEventListener('msfullscreenchange', handleFullscreenChange);
-    };
-  }, []);
 
   const handleSettingsButtonClick = () => {
     // Clear existing timeout
@@ -348,16 +313,10 @@ export default function CommanderTracker() {
   const getPlayerColorDefault = (idx) => {
     return PLAYER_COLORS_DEFAULT[idx % PLAYER_COLORS_DEFAULT.length];
   };
-
-  const getPlayerColorLight = (idx) => {
-    const colors = [
-      'bg-red-100 border-red-300',
-      'bg-blue-100 border-blue-300',
-      'bg-green-100 border-green-300',
-      'bg-purple-100 border-purple-300'
-    ];
-    return colors[idx % colors.length];
+  const getPlayerColorCommanderDamage = (idx) => {
+    return PLAYER_COLORS_COMMANDER_DAMAGE[idx % PLAYER_COLORS_COMMANDER_DAMAGE.length];
   };
+
 
   // Setup Menu Component
   const SetupMenu = () => {
@@ -414,28 +373,28 @@ export default function CommanderTracker() {
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={() => updateSetting('startingLife', Math.max(1, tempSettings.startingLife - 1))}
-                className="bg-gray-800 hover:bg-gray-700 border-2 border-red-600 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
+                className="bg-gray-800 hover:bg-gray-700 border-2 border-red-600 p-3 rounded-lg text-2xl font-bold touch-manipulation"
               >
                 -1
               </button>
               <button
                 onClick={() => updateSetting('startingLife', Math.max(1, tempSettings.startingLife - 5))}
-                className="bg-red-600 hover:bg-red-700 border-2 border-red-600 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
+                className="bg-red-600 hover:bg-red-700 border-2 border-red-600 p-3 rounded-lg text-2xl font-bold touch-manipulation"
               >
                 -5
               </button>
-              <div className="text-3xl font-bold min-w-[100px] text-center">
+              <div className="text-3xl font-bold min-w-[80px] text-center">
                 {tempSettings.startingLife}
               </div>
               <button
                 onClick={() => updateSetting('startingLife', tempSettings.startingLife + 5)}
-                className="bg-green-600 hover:bg-green-700 border-2 border-green-600 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
+                className="bg-green-600 hover:bg-green-700 border-2 border-green-600 p-3 rounded-lg text-2xl font-bold touch-manipulation"
               >
                 +5
               </button>
               <button
                 onClick={() => updateSetting('startingLife', tempSettings.startingLife + 1)}
-                className="bg-gray-800 hover:bg-gray-700 border-2 border-green-600 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
+                className="bg-gray-800 hover:bg-gray-700 border-2 border-green-600 p-3 rounded-lg text-2xl font-bold touch-manipulation"
               >
                 +1
               </button>
@@ -635,6 +594,17 @@ export default function CommanderTracker() {
                       e.stopPropagation();
                       handleLifeChange(idx, -1);
                     }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      startHoldRepeat(idx, -1);
+                    }}
+                    onMouseUp={stopHoldRepeat}
+                    onMouseLeave={stopHoldRepeat}
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      startHoldRepeat(idx, -1);
+                    }}
+                    onTouchEnd={stopHoldRepeat}
                     className="bg-red-600 hover:bg-red-700 p-3 rounded text-lg touch-manipulation w-10 h-10 flex items-center justify-center"
                   >
                     -
@@ -652,6 +622,17 @@ export default function CommanderTracker() {
                       e.stopPropagation();
                       handleLifeChange(idx, 1);
                     }}
+                    onMouseDown={(e) => {
+                      e.stopPropagation();
+                      startHoldRepeat(idx, 1);
+                    }}
+                    onMouseUp={stopHoldRepeat}
+                    onMouseLeave={stopHoldRepeat}
+                    onTouchStart={(e) => {
+                      e.stopPropagation();
+                      startHoldRepeat(idx, 1);
+                    }}
+                    onTouchEnd={stopHoldRepeat}
                     className="bg-green-600 hover:bg-green-700 p-3 rounded text-lg touch-manipulation w-10 h-10 flex items-center justify-center"
                   >
                     +
@@ -766,14 +747,14 @@ export default function CommanderTracker() {
                   return (
                     <div
                       key={sourceIdx}
-                      className={`${getPlayerColorLight(sourceIdx)} rounded-lg p-3 sm:p-4 md:p-5 text-center border-2 flex-1 min-w-[120px] sm:min-w-[140px] md:min-w-[160px] max-w-[140px] sm:max-w-[160px] md:max-w-[180px] ${
-                        currentDamage >= 21 ? 'border-red-500' : 'border-gray-400'
+                      className={`${getPlayerColorCommanderDamage(sourceIdx)} rounded-lg p-3 sm:p-4 md:p-5 text-center border-4 flex-1 min-w-[120px] sm:min-w-[140px] md:min-w-[160px] max-w-[140px] sm:max-w-[160px] md:max-w-[180px] ${
+                        currentDamage >= 21 ? 'border-red-500' : ''
                       }`}
                     >
-                      <div className="text-base font-bold text-gray-800 mb-2">
+                      <div className="text-base font-bold text-white mb-2">
                         P{sourceIdx + 1}
                       </div>
-                      <div className="text-3xl font-bold mb-3 text-gray-800">
+                      <div className="text-3xl font-bold mb-3 text-white">
                         {currentDamage}
                       </div>
                       {currentDamage >= 21 && (

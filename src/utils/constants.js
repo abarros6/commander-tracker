@@ -25,3 +25,11 @@ export const PLAYER_COLORS_LIGHT = [
   'bg-green-100 border-green-300',
   'bg-purple-100 border-purple-300'
 ];
+
+// Commander damage colors with subtle backgrounds and matching borders
+export const PLAYER_COLORS_COMMANDER_DAMAGE = [
+  'border-red-800 bg-red-900 bg-opacity-20 border-opacity-50',
+  'border-blue-800 bg-blue-900 bg-opacity-20 border-opacity-50',
+  'border-green-800 bg-green-900 bg-opacity-20 border-opacity-50',
+  'border-purple-800 bg-purple-900 bg-opacity-20 border-opacity-50'
+];
