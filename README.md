@@ -1,46 +1,137 @@
 # Commander Tracker
 
-A mobile-first web application for tracking 4-player Magic: The Gathering Commander games. Features chess clock-style timers combined with life total and commander damage tracking.
-
-![Commander Tracker Screenshot](https://via.placeholder.com/800x400?text=Commander+Tracker)
+A comprehensive Magic: The Gathering Commander life and timer tracking application built with React and Tailwind CSS.
 
 ## Features
 
-- ⏱️ **Chess Clock Timer System** - 4 independent timers, only active player counts down
-- ❤️ **Life Total Tracking** - Starting at 40 life with easy +/- controls
-- ⚔️ **Commander Damage Tracking** - Toggle-able tracking with elimination warnings
-- 📱 **Mobile-First Design** - Optimized for phones and tablets
-- 🎨 **Color-Coded Players** - Easy identification with distinct player colors
-- ⚡ **Fast & Responsive** - Built with Vite and Tailwind CSS
+### Game Management
+- **3-4 Player Support**: Configurable games for 3 or 4 players
+- **Customizable Starting Life**: Adjustable starting life totals with -5/-1/+1/+5 increment buttons (default 40 life)
+- **Per-Player Timers**: Individual turn timers with customizable duration (default 15 minutes)
+- **Random Starting Player**: Animated selection of the starting player
+- **Turn Management**: Clockwise turn progression with visual active player indication
 
-## Quick Start
+### Life Tracking
+- **Large, Clear Life Totals**: Easy-to-read life counters with touch-friendly +/- buttons
+- **Quick Life Adjustments**: Convenient increment/decrement controls positioned around timer
+- **Player Elimination Detection**: Visual indicators for eliminated players
 
-### Prerequisites
+### Commander Damage
+- **Full Commander Damage Tracking**: Track damage from each commander to each player
+- **Lethal Damage Warnings**: Clear indicators when commander damage reaches 21+
+- **Intuitive Modal Interface**: Easy-to-use commander damage adjustment modal with improved spacing
 
-- Node.js 18+ (recommended: Node.js 20+)
-- npm or yarn
+### Layout Options
+- **Table View**: Simulated table layout with rotated player cards positioned around a virtual table
+- **Grid View**: Traditional grid layout for simpler viewing
+- **Responsive Design**: Optimized for both desktop and mobile devices
 
-### Installation & Setup
+### Display Features
+- **Progressive Web App (PWA)**: Install as a native app on mobile and desktop
+- **Improved Fullscreen**: Enhanced fullscreen support with cross-browser compatibility
+- **Visual Player States**: Color-coded borders and highlighting for active players
+- **Touch-Optimized**: Large buttons and intuitive gestures for mobile gameplay
+- **Clean Interface**: Streamlined UI without unnecessary elements
+- **Offline Support**: Works without internet connection after initial load
 
-1. **Clone the repository**
+## Installation
+
+1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/yourusername/commander-tracker.git
    cd commander-tracker
    ```
 
-2. **Install dependencies**
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-3. **Start development server**
+3. Start the development server:
    ```bash
    npm run dev
    ```
 
-4. **Open in browser**
-   - Navigate to `http://localhost:5173`
-   - For mobile testing, use your local IP (e.g., `http://192.168.1.100:5173`)
+4. Open your browser to `http://localhost:5173`
+
+## PWA Installation
+
+Once the app is running or deployed, you can install it as a native app:
+
+### Mobile (iOS/Android)
+1. Open the app in your mobile browser (Safari/Chrome)
+2. Tap the browser menu (share button on iOS, three dots on Android)
+3. Select "Add to Home Screen" or "Install"
+4. The app will appear on your home screen like a native app
+
+### Desktop (Chrome/Edge)
+1. Look for the install icon in the address bar
+2. Click "Install Commander Tracker"
+3. The app will be installed and can be launched from your applications
+
+### Features After Installation
+- Works offline after initial load
+- Full-screen experience without browser UI
+- Faster launch times
+- Native app-like behavior
+
+## Usage
+
+1. **Setup**: Configure number of players (3-4), starting life total, and timer duration using the increment/decrement buttons
+2. **Start Game**: Begin with animated starting player selection
+3. **Track Life**: Use the large +/- buttons positioned around the timer to adjust life totals
+4. **Manage Turns**: Use the blue center button to pass turns clockwise
+5. **Commander Damage**: Click "dmg" button on player cards to track commander damage in the modal
+6. **Layout**: Switch between Table and Grid views in the settings menu
+7. **Install as App**: Use browser's "Add to Home Screen" or "Install" option for native app experience
+8. **Fullscreen**: Enable fullscreen mode for immersive mobile play
+
+## Game Controls
+
+### Setup Menu
+- **Player Count**: Choose between 3 or 4 players
+- **Starting Life**: Adjust with -5, -1, +1, +5 buttons (all with consistent border styling)
+- **Timer Duration**: Set minutes per player with matching control buttons
+
+### In-Game Controls
+- **Center Controls**: Play/pause, reset, next player, and settings access
+- **Player Cards**: Life adjustment buttons positioned around timer display
+- **Commander Damage**: Dedicated "dmg" button for easy access to damage tracking modal
+
+### Settings Menu
+- **Layout Toggle**: Switch between Table and Grid views
+- **Fullscreen Mode**: Toggle fullscreen for mobile devices
+- **Game Settings**: Return to setup menu
+
+## Technologies Used
+
+- **React**: Frontend framework with hooks for state management
+- **Tailwind CSS**: Utility-first CSS framework for responsive design
+- **Lucide React**: Modern icon library for UI elements
+- **Vite**: Fast development build tool
+
+## Project Structure
+
+- `src/App.jsx`: Main application component containing all game logic and UI
+- `src/utils/constants.js`: Player color schemes and game constants
+- `src/index.css`: Global styles, Tailwind imports, and fullscreen optimization
+
+## Key Features Implemented
+
+### Recent Improvements
+- **PWA Support**: Now installable as a native app with offline functionality
+- **Enhanced Fullscreen**: Improved fullscreen compatibility across browsers and mobile devices
+- Removed dice rolling and coin flipping functionality for streamlined experience
+- Enhanced commander damage modal with better spacing and centered life display
+- Improved button sizing and spacing for better touch interaction
+- Cleaned up settings menu to focus on layout and display controls
+- Unified button styling with consistent border treatments
+
+### Mobile Optimization
+- Touch-friendly button sizes and spacing
+- Fullscreen mode with disabled scrolling
+- Responsive layout that adapts to different screen sizes
+- Optimized table view with rotated cards for intuitive gameplay
 
 ## Available Scripts
 
@@ -51,228 +142,6 @@ A mobile-first web application for tracking 4-player Magic: The Gathering Comman
 | `npm run preview` | Preview production build locally |
 | `npm run lint` | Run ESLint for code quality checks |
 
-## Building for Production
-
-### Local Build
-
-```bash
-# Create optimized build
-npm run build
-
-# Preview the build locally
-npm run preview
-```
-
-The build outputs to the `dist/` directory and is ready for deployment.
-
-### Build Verification
-
-Before deploying, verify the build works correctly:
-
-```bash
-npm run build && npm run preview
-```
-
-Test the preview URL thoroughly on both desktop and mobile devices.
-
-## Deployment
-
-### Render (Recommended)
-
-This app is optimized for deployment on [Render](https://render.com) as a static site.
-
-#### Automatic Deployment
-
-1. **Push to GitHub**
-   ```bash
-   git add .
-   git commit -m "Initial commit"
-   git branch -M main
-   git remote add origin <your-github-repo-url>
-   git push -u origin main
-   ```
-
-2. **Create New Static Site on Render**
-   - Go to [Render Dashboard](https://dashboard.render.com)
-   - Click "New" → "Static Site"
-   - Connect your GitHub repository
-
-3. **Configure Build Settings**
-   ```
-   Build Command: npm run build
-   Publish Directory: dist
-   ```
-
-4. **Deploy**
-   - Click "Create Static Site"
-   - Render will automatically build and deploy
-   - Get your live URL (e.g., `https://commander-tracker.onrender.com`)
-
-#### Manual Deployment (render.yaml)
-
-Create `render.yaml` in your project root:
-
-```yaml
-services:
-  - type: web
-    name: commander-tracker
-    env: static
-    buildCommand: npm run build
-    staticPublishPath: dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-```
-
-### Alternative Deployment Options
-
-#### Netlify
-```bash
-# Install Netlify CLI
-npm install -g netlify-cli
-
-# Build and deploy
-npm run build
-netlify deploy --prod --dir=dist
-```
-
-#### Vercel
-```bash
-# Install Vercel CLI
-npm install -g vercel
-
-# Deploy
-npm run build
-vercel --prod
-```
-
-#### GitHub Pages
-1. Build the project: `npm run build`
-2. Push the `dist` folder to `gh-pages` branch
-3. Enable GitHub Pages in repository settings
-
-## Development Guide
-
-### Project Structure
-
-```
-commander-tracker/
-├── public/                 # Static assets
-├── src/
-│   ├── components/        # React components
-│   │   ├── PlayerCard.jsx        # Individual player card
-│   │   ├── TimerDisplay.jsx      # Timer component
-│   │   ├── LifeCounter.jsx       # Life tracking
-│   │   ├── CommanderDamage.jsx   # Commander damage
-│   │   └── GameControls.jsx      # Game control buttons
-│   ├── hooks/             # Custom React hooks
-│   │   └── useTimer.js           # Timer management
-│   ├── utils/             # Utility functions
-│   │   ├── constants.js          # App constants
-│   │   └── formatTime.js         # Time formatting
-│   ├── App.jsx           # Main app component
-│   ├── main.jsx          # React entry point
-│   └── index.css         # Global styles
-├── package.json
-├── vite.config.js        # Vite configuration
-├── tailwind.config.js    # Tailwind CSS config
-└── README.md
-```
-
-### Key Components
-
-- **PlayerCard**: Main player interface with timer, life counter, and commander damage
-- **GameControls**: Central controls for play/pause, reset, next player, and commander damage toggle
-- **useTimer**: Custom hook managing the timer intervals and active player logic
-
-### Mobile Optimization
-
-The app uses several mobile-first design principles:
-
-- **Touch Targets**: All interactive elements are minimum 44x44px
-- **Responsive Grid**: Single column on mobile, 2x2 grid on tablet+
-- **Large Text**: Timers (48-60px), life totals (36-48px), player names (20-24px)
-- **Viewport Meta**: Prevents zooming and optimizes for mobile browsers
-
-### Game Logic
-
-- **Timer System**: Only the active player's timer decrements
-- **Life Tracking**: Standard Commander format starting at 40 life
-- **Commander Damage**: Each player tracks damage from other 3 players
-- **Elimination**: Visual warnings when life ≤ 0 or commander damage ≥ 21
-
-## Testing
-
-### Manual Testing Checklist
-
-Before deployment, test these features:
-
-- [ ] All timers count down correctly
-- [ ] Only active player's timer decrements
-- [ ] Life totals update accurately with +/- buttons
-- [ ] Commander damage tracking works for all player combinations
-- [ ] Reset functionality clears all data
-- [ ] Player name editing works
-- [ ] Active player highlighting is visible
-- [ ] Mobile layout is usable on actual devices
-- [ ] Touch targets are adequately sized
-- [ ] No horizontal scrolling on mobile
-- [ ] Landscape orientation works
-- [ ] Works on iOS Safari and Android Chrome
-
-### Device Testing
-
-Test on these devices/browsers:
-
-- **Mobile**: iPhone Safari, Android Chrome
-- **Tablet**: iPad Safari, Android tablet
-- **Desktop**: Chrome, Firefox, Safari, Edge
-
-## Configuration
-
-### Environment Variables
-
-No environment variables are required for basic functionality.
-
-### Tailwind CSS
-
-The project uses Tailwind CSS v4 with the default configuration. Modify `tailwind.config.js` to customize colors, spacing, or breakpoints.
-
-### Vite Configuration
-
-The `vite.config.js` is set up for React with standard optimizations. Modify as needed for additional build requirements.
-
-## Troubleshooting
-
-### Common Issues
-
-1. **Build Fails**
-   ```bash
-   # Clear node modules and reinstall
-   rm -rf node_modules package-lock.json
-   npm install
-   ```
-
-2. **Timers Not Working**
-   - Check browser console for JavaScript errors
-   - Ensure `useTimer` hook is properly imported
-
-3. **Mobile Layout Issues**
-   - Verify viewport meta tag in `index.html`
-   - Check Tailwind responsive classes (`md:`, `lg:`)
-
-4. **Deployment Fails**
-   - Verify Node.js version compatibility
-   - Check build command and publish directory settings
-   - Review deployment logs for specific errors
-
-### Performance Issues
-
-- **Slow Loading**: Optimize images, enable compression
-- **Memory Leaks**: Check timer cleanup in `useTimer` hook
-- **Large Bundle**: Analyze with `npm run build` and consider code splitting
-
 ## Contributing
 
 1. Fork the repository
@@ -281,25 +150,9 @@ The `vite.config.js` is set up for React with standard optimizations. Modify as 
 4. Push to branch: `git push origin feature-name`
 5. Submit a pull request
 
-## Technology Stack
-
-- **Framework**: React 18 with Vite
-- **Styling**: Tailwind CSS v4
-- **Icons**: lucide-react
-- **Build Tool**: Vite
-- **Deployment**: Render (static site)
-
 ## License
 
-MIT License - feel free to use this project for your Magic: The Gathering games!
-
-## Support
-
-For issues or questions:
-
-1. Check this README for common solutions
-2. Review the requirements document (`commander-tracker-requirements.md`)
-3. Create an issue in the GitHub repository
+MIT License
 
 ---
 
