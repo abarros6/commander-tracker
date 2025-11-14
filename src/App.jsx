@@ -16,6 +16,8 @@ export default function CommanderTracker() {
   const [animatedActivePlayer, setAnimatedActivePlayer] = useState(0);
   const [showCommanderDamageModal, setShowCommanderDamageModal] = useState(false);
   const [commanderDamagePlayerIndex, setCommanderDamagePlayerIndex] = useState(null);
+  const [deathButtonStates, setDeathButtonStates] = useState({});
+  const deathTimeoutRefs = useRef({});
   const intervalRef = useRef(null);
   const animationRef = useRef(null);
   const holdIntervalRef = useRef(null);
@@ -35,7 +37,7 @@ export default function CommanderTracker() {
     if (isRunning && activePlayer !== null) {
       intervalRef.current = setInterval(() => {
         setPlayers(prev => prev.map((p, idx) => {
-          if (idx === activePlayer && p.time > 0) {
+          if (idx === activePlayer && p.time > 0 && !p.isDead) {
             return { ...p, time: p.time - 1 };
           }
           return p;
@@ -60,6 +62,10 @@ export default function CommanderTracker() {
       if (resetTimeoutRef.current) {
         clearTimeout(resetTimeoutRef.current);
       }
+      // Clear all death timeouts
+      Object.values(deathTimeoutRefs.current).forEach(timeout => {
+        if (timeout) clearTimeout(timeout);
+      });
     };
   }, [isRunning, activePlayer]);
 
@@ -162,6 +168,51 @@ export default function CommanderTracker() {
     }, 5000);
   };
 
+  const handleDeathButtonClick = (playerIdx) => {
+    // Clear existing timeout for this player
+    if (deathTimeoutRefs.current[playerIdx]) {
+      clearTimeout(deathTimeoutRefs.current[playerIdx]);
+    }
+
+    const currentState = deathButtonStates[playerIdx] || 'normal';
+    const player = players[playerIdx];
+
+    if (!player.isDead) {
+      // Death sequence (alive -> dead)
+      if (currentState === 'normal') {
+        setDeathButtonStates(prev => ({ ...prev, [playerIdx]: 'first' }));
+      } else if (currentState === 'first') {
+        setDeathButtonStates(prev => ({ ...prev, [playerIdx]: 'second' }));
+      } else if (currentState === 'second') {
+        // Mark player as dead
+        setPlayers(prev => prev.map((p, idx) => 
+          idx === playerIdx ? { ...p, isDead: true } : p
+        ));
+        setDeathButtonStates(prev => ({ ...prev, [playerIdx]: 'normal' }));
+        return; // Don't set timeout if marking as dead
+      }
+    } else {
+      // Revival sequence (dead -> alive)
+      if (currentState === 'normal') {
+        setDeathButtonStates(prev => ({ ...prev, [playerIdx]: 'revive_first' }));
+      } else if (currentState === 'revive_first') {
+        setDeathButtonStates(prev => ({ ...prev, [playerIdx]: 'revive_second' }));
+      } else if (currentState === 'revive_second') {
+        // Revive player
+        setPlayers(prev => prev.map((p, idx) => 
+          idx === playerIdx ? { ...p, isDead: false } : p
+        ));
+        setDeathButtonStates(prev => ({ ...prev, [playerIdx]: 'normal' }));
+        return; // Don't set timeout if reviving
+      }
+    }
+
+    // Set timeout to reset to normal after 5 seconds
+    deathTimeoutRefs.current[playerIdx] = setTimeout(() => {
+      setDeathButtonStates(prev => ({ ...prev, [playerIdx]: 'normal' }));
+    }, 5000);
+  };
+
   const nextPlayer = () => {
     // Clockwise order for 4 players: left-top → right-top → right-bottom → left-bottom
     // Clockwise order for 3 players: left-top → right-top → left-bottom
@@ -169,15 +220,21 @@ export default function CommanderTracker() {
     if (gameSettings.numberOfPlayers === 3) {
       // 3-player clockwise: 0 (left-top) → 2 (right-top) → 1 (left-bottom) → 0
       const clockwiseOrder = [0, 2, 1];
-      const currentIndex = clockwiseOrder.indexOf(activePlayer);
-      const nextIndex = (currentIndex + 1) % 3;
-      nextPlayerIndex = clockwiseOrder[nextIndex];
+      const alivePlayers = clockwiseOrder.filter(idx => !players[idx]?.isDead);
+      if (alivePlayers.length === 0) return; // All players dead
+      
+      const currentIndex = alivePlayers.indexOf(activePlayer);
+      const nextIndex = (currentIndex + 1) % alivePlayers.length;
+      nextPlayerIndex = alivePlayers[nextIndex];
     } else {
       // 4-player clockwise: 0 (left-top) → 2 (right-top) → 3 (right-bottom) → 1 (left-bottom) → 0
       const clockwiseOrder = [0, 2, 3, 1];
-      const currentIndex = clockwiseOrder.indexOf(activePlayer);
-      const nextIndex = (currentIndex + 1) % 4;
-      nextPlayerIndex = clockwiseOrder[nextIndex];
+      const alivePlayers = clockwiseOrder.filter(idx => !players[idx]?.isDead);
+      if (alivePlayers.length === 0) return; // All players dead
+      
+      const currentIndex = alivePlayers.indexOf(activePlayer);
+      const nextIndex = (currentIndex + 1) % alivePlayers.length;
+      nextPlayerIndex = alivePlayers[nextIndex];
     }
     setActivePlayer(nextPlayerIndex);
   };
@@ -188,15 +245,21 @@ export default function CommanderTracker() {
     if (gameSettings.numberOfPlayers === 3) {
       // 3-player counter-clockwise: 0 (left-top) ← 2 (right-top) ← 1 (left-bottom) ← 0
       const clockwiseOrder = [0, 2, 1];
-      const currentIndex = clockwiseOrder.indexOf(activePlayer);
-      const previousIndex = (currentIndex - 1 + 3) % 3;
-      previousPlayerIndex = clockwiseOrder[previousIndex];
+      const alivePlayers = clockwiseOrder.filter(idx => !players[idx]?.isDead);
+      if (alivePlayers.length === 0) return; // All players dead
+      
+      const currentIndex = alivePlayers.indexOf(activePlayer);
+      const previousIndex = (currentIndex - 1 + alivePlayers.length) % alivePlayers.length;
+      previousPlayerIndex = alivePlayers[previousIndex];
     } else {
       // 4-player counter-clockwise: 0 (left-top) ← 2 (right-top) ← 3 (right-bottom) ← 1 (left-bottom) ← 0
       const clockwiseOrder = [0, 2, 3, 1];
-      const currentIndex = clockwiseOrder.indexOf(activePlayer);
-      const previousIndex = (currentIndex - 1 + 4) % 4;
-      previousPlayerIndex = clockwiseOrder[previousIndex];
+      const alivePlayers = clockwiseOrder.filter(idx => !players[idx]?.isDead);
+      if (alivePlayers.length === 0) return; // All players dead
+      
+      const currentIndex = alivePlayers.indexOf(activePlayer);
+      const previousIndex = (currentIndex - 1 + alivePlayers.length) % alivePlayers.length;
+      previousPlayerIndex = alivePlayers[previousIndex];
     }
     setActivePlayer(previousPlayerIndex);
   };
@@ -209,7 +272,8 @@ export default function CommanderTracker() {
         id: i + 1,
         life: startingLife,
         time: timeInSeconds,
-        commanderDamage: commanderDamageArray
+        commanderDamage: commanderDamageArray,
+        isDead: false
       });
     }
     return newPlayers;
@@ -268,6 +332,13 @@ export default function CommanderTracker() {
     if (animationRef.current) {
       clearTimeout(animationRef.current);
     }
+
+    // Clear death button states and timeouts
+    setDeathButtonStates({});
+    Object.values(deathTimeoutRefs.current).forEach(timeout => {
+      if (timeout) clearTimeout(timeout);
+    });
+    deathTimeoutRefs.current = {};
     
     const timeInSeconds = gameSettings.timerMinutes * 60;
     const newPlayers = createPlayers(gameSettings.numberOfPlayers, gameSettings.startingLife, timeInSeconds);
@@ -571,7 +642,9 @@ export default function CommanderTracker() {
             className={`
               border-4 rounded-xl transition-all touch-manipulation 
               p-3 ${positionClass} w-[clamp(260px,35vw,350px)] h-36 ${rotationClass}
-              ${(isSelectingStartingPlayer ? animatedActivePlayer === idx : activePlayer === idx)
+              ${player.isDead
+                ? 'bg-gray-800 border-red-600 opacity-60'
+                : (isSelectingStartingPlayer ? animatedActivePlayer === idx : activePlayer === idx)
                 ? `${getPlayerColor(idx)} shadow-lg`
                 : getPlayerColorDefault(idx)
               }
@@ -580,6 +653,31 @@ export default function CommanderTracker() {
             {/* Table layout content */}
             <div className="flex items-center justify-between w-full h-full">
               <div className="flex-1">
+                {/* Death Button - positioned in top left */}
+                <div className="absolute top-1 left-1">
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeathButtonClick(idx);
+                    }}
+                    className={`w-8 h-8 rounded-full text-lg transition-colors ${
+                      player.isDead 
+                        ? deathButtonStates[idx] === 'normal' || !deathButtonStates[idx]
+                          ? 'bg-red-800 border-2 border-red-600 hover:bg-red-700'
+                          : deathButtonStates[idx] === 'revive_first'
+                          ? 'bg-orange-600 hover:bg-orange-700 border-2 border-orange-400'
+                          : 'bg-green-600 hover:bg-green-700 border-2 border-green-400'
+                        : deathButtonStates[idx] === 'normal' || !deathButtonStates[idx]
+                        ? 'bg-gray-700 hover:bg-gray-600 border-2 border-gray-500'
+                        : deathButtonStates[idx] === 'first'
+                        ? 'bg-orange-600 hover:bg-orange-700 border-2 border-orange-400'
+                        : 'bg-red-600 hover:bg-red-700 border-2 border-red-400'
+                    }`}
+                    title={player.isDead ? "Revive player (tap 3 times)" : "Mark player as dead (tap 3 times)"}
+                  >
+                    💀
+                  </button>
+                </div>
               </div>
               
               <div className="flex flex-col items-center">
