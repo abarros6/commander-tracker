@@ -21,10 +21,11 @@ A comprehensive Magic: The Gathering Commander life and timer tracking applicati
 - **Lethal Damage Warnings**: Clear indicators when commander damage reaches 21+
 - **Intuitive Modal Interface**: Easy-to-use commander damage adjustment modal with improved spacing
 
-### Layout Options
+### Layout
 - **Table View**: Simulated table layout with rotated player cards positioned around a virtual table
-- **Grid View**: Traditional grid layout for simpler viewing
+- **Unified Layout**: Both 3 and 4 player games use the same consistent positioning system
 - **Responsive Design**: Optimized for both desktop and mobile devices
+- **Consistent Positioning**: Fixed positioning that works identically across all devices and screen sizes
 
 ### Display Features
 - **Progressive Web App (PWA)**: Install as a native app on mobile and desktop
@@ -82,9 +83,8 @@ Once the app is running or deployed, you can install it as a native app:
 3. **Track Life**: Use the large +/- buttons positioned around the timer to adjust life totals
 4. **Manage Turns**: Use the blue center button to pass turns clockwise
 5. **Commander Damage**: Click "dmg" button on player cards to track commander damage in the modal
-6. **Layout**: Switch between Table and Grid views in the settings menu
-7. **Install as App**: Use browser's "Add to Home Screen" or "Install" option for native app experience
-8. **Fullscreen**: Enable fullscreen mode for immersive mobile play
+6. **Install as App**: Use browser's "Add to Home Screen" or "Install" option for native app experience
+7. **Fullscreen**: Enable fullscreen mode for immersive mobile play
 
 ## Game Controls
 
@@ -99,7 +99,6 @@ Once the app is running or deployed, you can install it as a native app:
 - **Commander Damage**: Dedicated "dmg" button for easy access to damage tracking modal
 
 ### Settings Menu
-- **Layout Toggle**: Switch between Table and Grid views
 - **Fullscreen Mode**: Toggle fullscreen for mobile devices
 - **Game Settings**: Return to setup menu
 
@@ -121,10 +120,11 @@ Once the app is running or deployed, you can install it as a native app:
 ### Recent Improvements
 - **PWA Support**: Now installable as a native app with offline functionality
 - **Enhanced Fullscreen**: Improved fullscreen compatibility across browsers and mobile devices
+- **Simplified Layout**: Removed grid view option, focusing on optimal table layout experience
+- **Consistent Spacing**: Fixed positioning inconsistencies between PWA and browser modes
 - Removed dice rolling and coin flipping functionality for streamlined experience
 - Enhanced commander damage modal with better spacing and centered life display
 - Improved button sizing and spacing for better touch interaction
-- Cleaned up settings menu to focus on layout and display controls
 - Unified button styling with consistent border treatments
 
 ### Mobile Optimization
