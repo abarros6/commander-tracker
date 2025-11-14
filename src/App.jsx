@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Play, Pause, RotateCcw, Plus, Minus, Settings, Clock, Heart, Menu, Dice1, Dice6, RotateCw, Layout, ArrowRight } from 'lucide-react';
+import { Play, Pause, RotateCcw, Plus, Minus, Settings, Clock, Heart, Menu, Layout, ArrowRight } from 'lucide-react';
 import { PLAYER_COLORS_DEFAULT, PLAYER_COLORS_ACTIVE } from './utils/constants';
 
 export default function CommanderTracker() {
@@ -10,27 +10,20 @@ export default function CommanderTracker() {
   const [isRunning, setIsRunning] = useState(false);
   const [showCommanderDamage, setShowCommanderDamage] = useState(false);
   const [showGameMenu, setShowGameMenu] = useState(false);
-  const [showDiceMenu, setShowDiceMenu] = useState(false);
   const [layout, setLayout] = useState('table'); // 'table', 'grid'
   const [isSelectingStartingPlayer, setIsSelectingStartingPlayer] = useState(false);
   const [animatedActivePlayer, setAnimatedActivePlayer] = useState(0);
-  const [diceResult, setDiceResult] = useState(null);
-  const [coinResult, setCoinResult] = useState(null);
-  const [isRollingDice, setIsRollingDice] = useState(false);
-  const [isFlippingCoin, setIsFlippingCoin] = useState(false);
   const [showCommanderDamageModal, setShowCommanderDamageModal] = useState(false);
   const [commanderDamagePlayerIndex, setCommanderDamagePlayerIndex] = useState(null);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const intervalRef = useRef(null);
   const animationRef = useRef(null);
-  const diceAnimationRef = useRef(null);
-  const coinAnimationRef = useRef(null);
 
   // Game settings
   const [gameSettings, setGameSettings] = useState({
     numberOfPlayers: 4,
     startingLife: 40,
-    timerMinutes: 20
+    timerMinutes: 15
   });
 
   // Player state with floating mana - will be dynamically created based on numberOfPlayers
@@ -58,12 +51,6 @@ export default function CommanderTracker() {
       }
       if (animationRef.current) {
         clearTimeout(animationRef.current);
-      }
-      if (diceAnimationRef.current) {
-        clearTimeout(diceAnimationRef.current);
-      }
-      if (coinAnimationRef.current) {
-        clearTimeout(coinAnimationRef.current);
       }
     };
   }, [isRunning, activePlayer]);
@@ -100,70 +87,6 @@ export default function CommanderTracker() {
   };
 
 
-  // Dice and coin functions with animations
-  const rollDice = (sides) => {
-    setIsRollingDice(true);
-    setDiceResult(null);
-    
-    let rolls = 0;
-    const maxRolls = 15;
-    let speed = 100;
-    
-    const animateRoll = () => {
-      const tempResult = Math.floor(Math.random() * sides) + 1;
-      setDiceResult(`D${sides}: ${tempResult}`);
-      rolls++;
-      
-      if (rolls > maxRolls * 0.7) {
-        speed += 50;
-      }
-      
-      if (rolls < maxRolls) {
-        diceAnimationRef.current = setTimeout(animateRoll, speed);
-      } else {
-        const finalResult = Math.floor(Math.random() * sides) + 1;
-        setDiceResult(`D${sides}: ${finalResult}`);
-        setTimeout(() => {
-          setIsRollingDice(false);
-          setTimeout(() => setDiceResult(null), 3000);
-        }, 500);
-      }
-    };
-    
-    animateRoll();
-  };
-
-  const flipCoin = () => {
-    setIsFlippingCoin(true);
-    setCoinResult(null);
-    
-    let flips = 0;
-    const maxFlips = 12;
-    let speed = 120;
-    
-    const animateFlip = () => {
-      const tempResult = Math.random() < 0.5 ? 'Heads' : 'Tails';
-      setCoinResult(`Coin: ${tempResult}`);
-      flips++;
-      
-      if (flips > maxFlips * 0.6) {
-        speed += 60;
-      }
-      
-      if (flips < maxFlips) {
-        coinAnimationRef.current = setTimeout(animateFlip, speed);
-      } else {
-        const finalResult = Math.random() < 0.5 ? 'Heads' : 'Tails';
-        setCoinResult(`Coin: ${finalResult}`);
-        setTimeout(() => {
-          setIsFlippingCoin(false);
-          setTimeout(() => setCoinResult(null), 3000);
-        }, 500);
-      }
-    };
-    
-    animateFlip();
-  };
 
   // Fullscreen functions
   const toggleFullscreen = () => {
@@ -388,8 +311,14 @@ export default function CommanderTracker() {
             </h2>
             <div className="flex items-center justify-center gap-4">
               <button
+                onClick={() => updateSetting('startingLife', Math.max(1, tempSettings.startingLife - 1))}
+                className="bg-gray-800 hover:bg-gray-700 border-2 border-red-600 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
+              >
+                -1
+              </button>
+              <button
                 onClick={() => updateSetting('startingLife', Math.max(1, tempSettings.startingLife - 5))}
-                className="bg-red-600 hover:bg-red-700 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
+                className="bg-red-600 hover:bg-red-700 border-2 border-red-600 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
               >
                 -5
               </button>
@@ -398,25 +327,16 @@ export default function CommanderTracker() {
               </div>
               <button
                 onClick={() => updateSetting('startingLife', tempSettings.startingLife + 5)}
-                className="bg-green-600 hover:bg-green-700 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
+                className="bg-green-600 hover:bg-green-700 border-2 border-green-600 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
               >
                 +5
               </button>
-            </div>
-            <div className="flex justify-center gap-2 mt-3">
-              {[20, 30, 40].map(life => (
-                <button
-                  key={life}
-                  onClick={() => updateSetting('startingLife', life)}
-                  className={`px-4 py-3 rounded-lg font-semibold touch-manipulation transition-colors ${
-                    tempSettings.startingLife === life
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                  }`}
-                >
-                  {life}
-                </button>
-              ))}
+              <button
+                onClick={() => updateSetting('startingLife', tempSettings.startingLife + 1)}
+                className="bg-gray-800 hover:bg-gray-700 border-2 border-green-600 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
+              >
+                +1
+              </button>
             </div>
           </div>
 
@@ -428,8 +348,14 @@ export default function CommanderTracker() {
             </h2>
             <div className="flex items-center justify-center gap-4">
               <button
+                onClick={() => updateSetting('timerMinutes', Math.max(1, tempSettings.timerMinutes - 1))}
+                className="bg-gray-800 hover:bg-gray-700 border-2 border-red-600 p-3 rounded-lg text-2xl font-bold touch-manipulation"
+              >
+                -1
+              </button>
+              <button
                 onClick={() => updateSetting('timerMinutes', Math.max(5, tempSettings.timerMinutes - 5))}
-                className="bg-red-600 hover:bg-red-700 p-3 rounded-lg text-2xl font-bold touch-manipulation"
+                className="bg-red-600 hover:bg-red-700 border-2 border-red-600 p-3 rounded-lg text-2xl font-bold touch-manipulation"
               >
                 -5
               </button>
@@ -438,25 +364,16 @@ export default function CommanderTracker() {
               </div>
               <button
                 onClick={() => updateSetting('timerMinutes', tempSettings.timerMinutes + 5)}
-                className="bg-green-600 hover:bg-green-700 p-3 rounded-lg text-2xl font-bold touch-manipulation"
+                className="bg-green-600 hover:bg-green-700 border-2 border-green-600 p-3 rounded-lg text-2xl font-bold touch-manipulation"
               >
                 +5
               </button>
-            </div>
-            <div className="flex justify-center gap-2 mt-3">
-              {[10, 15, 20, 30].map(minutes => (
-                <button
-                  key={minutes}
-                  onClick={() => updateSetting('timerMinutes', minutes)}
-                  className={`px-4 py-2 rounded-lg font-semibold touch-manipulation ${
-                    tempSettings.timerMinutes === minutes
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
-                  }`}
-                >
-                  {minutes}m
-                </button>
-              ))}
+              <button
+                onClick={() => updateSetting('timerMinutes', tempSettings.timerMinutes + 1)}
+                className="bg-gray-800 hover:bg-gray-700 border-2 border-green-600 p-3 rounded-lg text-2xl font-bold touch-manipulation"
+              >
+                +1
+              </button>
             </div>
           </div>
 
@@ -486,7 +403,6 @@ export default function CommanderTracker() {
       }`}
       onClick={() => {
         setShowGameMenu(false);
-        setShowDiceMenu(false);
       }}
     >
       {/* Center Controls - Back to original center positioning */}
@@ -785,46 +701,7 @@ export default function CommanderTracker() {
             </div>
           </div>
 
-          {/* Game Controls */}
-          <div className="mb-4">
-            <h3 className="text-sm font-semibold mb-2">Game Controls</h3>
-            <div className="space-y-2">
-              <button
-                onClick={nextPlayer}
-                className="w-full bg-green-600 hover:bg-green-700 p-2 rounded text-sm flex items-center justify-center"
-              >
-                <ArrowRight className="mr-2" size={16} />
-                Next Player (Clockwise)
-              </button>
-              <button
-                onClick={() => setShowCommanderDamage(!showCommanderDamage)}
-                className="w-full bg-gray-700 hover:bg-gray-600 p-2 rounded text-sm"
-              >
-                {showCommanderDamage ? 'Hide' : 'Show'} Commander Damage
-              </button>
-              <button
-                onClick={resetGame}
-                className="w-full bg-red-600 hover:bg-red-700 p-2 rounded text-sm flex items-center justify-center"
-              >
-                <RotateCcw className="mr-2" size={16} />
-                Reset Game
-              </button>
-            </div>
-          </div>
 
-          {/* Dice and Coin */}
-          <div className="mb-4">
-            <h3 className="text-sm font-semibold mb-2 flex items-center">
-              <Dice6 className="mr-2" size={16} />
-              Dice & Coin
-            </h3>
-            <button
-              onClick={() => setShowDiceMenu(!showDiceMenu)}
-              className="w-full bg-purple-600 hover:bg-purple-700 p-2 rounded text-sm"
-            >
-              Roll Dice / Flip Coin
-            </button>
-          </div>
 
           {/* Fullscreen Toggle */}
           <div className="mb-4">
@@ -863,68 +740,6 @@ export default function CommanderTracker() {
       )}
     </div>
 
-    {/* Overlays outside dimmed content */}
-    {/* Dice/Coin Animation Results */}
-      {(diceResult || coinResult) && (
-        <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 bg-gray-800 border-4 border-yellow-500 rounded-lg p-6 text-center shadow-xl">
-          <div className={`text-4xl font-bold mb-2 ${
-            isRollingDice || isFlippingCoin ? 'animate-pulse text-yellow-400' : 'text-white'
-          }`}>
-            {diceResult || coinResult}
-          </div>
-          {(isRollingDice || isFlippingCoin) && (
-            <div className="text-sm text-gray-300 animate-bounce">
-              {isRollingDice ? 'Rolling...' : 'Flipping...'}
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Dice Menu */}
-      {showDiceMenu && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-gray-800 rounded-lg p-6 w-full max-w-sm">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-xl font-bold">Dice & Coin</h2>
-              <button
-                onClick={() => setShowDiceMenu(false)}
-                className="text-gray-400 hover:text-white"
-              >
-                ✕
-              </button>
-            </div>
-            
-            {/* Dice Rolling */}
-            <div className="mb-6">
-              <h3 className="text-sm font-semibold mb-3">Roll Dice</h3>
-              <div className="grid grid-cols-3 gap-2">
-                {[4, 6, 8, 10, 12, 20].map(sides => (
-                  <button
-                    key={sides}
-                    onClick={() => rollDice(sides)}
-                    className="bg-blue-600 hover:bg-blue-700 p-3 rounded-lg text-sm font-bold flex flex-col items-center"
-                  >
-                    <Dice1 size={20} />
-                    <span>D{sides}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Coin Flip */}
-            <div>
-              <h3 className="text-sm font-semibold mb-3">Coin Flip</h3>
-              <button
-                onClick={() => flipCoin()}
-                className="w-full bg-yellow-600 hover:bg-yellow-700 p-3 rounded-lg font-bold flex items-center justify-center"
-              >
-                <RotateCw className="mr-2" size={20} />
-                Flip Coin
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Dead Players Warning */}
       {players.some(p => p.life <= 0) && (
