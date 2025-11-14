@@ -10,7 +10,7 @@ export default function CommanderTracker() {
   const [showCommanderDamage, setShowCommanderDamage] = useState(false);
   const [showGameMenu, setShowGameMenu] = useState(false);
   const [showDiceMenu, setShowDiceMenu] = useState(false);
-  const [layout, setLayout] = useState('table'); // 'table', 'grid', 'circle'
+  const [layout, setLayout] = useState('table'); // 'table', 'grid'
   const intervalRef = useRef(null);
 
   // Game settings
@@ -177,8 +177,8 @@ export default function CommanderTracker() {
     };
 
     return (
-      <div className=" m-8 bg-gray-900 text-white p-4">
-        <div className="max-w-lg mx-auto">
+      <div className="min-h-screen bg-gray-900 text-white p-4">
+        <div className="max-w-lg mx-auto pt-8">
           <header className="text-center mb-6">
             <h1 className="text-3xl font-bold text-white mb-2">Game Setup</h1>
             <p className="text-gray-300">Configure your Commander game</p>
@@ -190,12 +190,12 @@ export default function CommanderTracker() {
               <Settings className="mr-2" size={20} />
               Number of Players
             </h2>
-            <div className="flex justify-center gap-4">
+            <div className="flex flex-col sm:flex-row justify-center gap-3 sm:gap-4">
               {[3, 4].map(num => (
                 <button
                   key={num}
                   onClick={() => updateSetting('numberOfPlayers', num)}
-                  className={`px-6 py-3 rounded-lg font-semibold text-xl touch-manipulation ${
+                  className={`px-6 py-4 rounded-lg font-semibold text-lg sm:text-xl touch-manipulation transition-colors ${
                     tempSettings.numberOfPlayers === num
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
@@ -219,16 +219,16 @@ export default function CommanderTracker() {
             <div className="flex items-center justify-center gap-4">
               <button
                 onClick={() => updateSetting('startingLife', Math.max(1, tempSettings.startingLife - 5))}
-                className="bg-red-600 hover:bg-red-700 p-3 rounded-lg text-2xl font-bold touch-manipulation"
+                className="bg-red-600 hover:bg-red-700 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
               >
                 -5
               </button>
-              <div className="text-3xl font-bold min-w-[80px] text-center">
+              <div className="text-3xl font-bold min-w-[100px] text-center">
                 {tempSettings.startingLife}
               </div>
               <button
                 onClick={() => updateSetting('startingLife', tempSettings.startingLife + 5)}
-                className="bg-green-600 hover:bg-green-700 p-3 rounded-lg text-2xl font-bold touch-manipulation"
+                className="bg-green-600 hover:bg-green-700 p-4 rounded-lg text-xl font-bold touch-manipulation transition-colors"
               >
                 +5
               </button>
@@ -238,7 +238,7 @@ export default function CommanderTracker() {
                 <button
                   key={life}
                   onClick={() => updateSetting('startingLife', life)}
-                  className={`px-4 py-2 rounded-lg font-semibold touch-manipulation ${
+                  className={`px-4 py-3 rounded-lg font-semibold touch-manipulation transition-colors ${
                     tempSettings.startingLife === life
                       ? 'bg-blue-600 text-white'
                       : 'bg-gray-700 hover:bg-gray-600 text-gray-300'
@@ -294,7 +294,7 @@ export default function CommanderTracker() {
           {/* Start Game Button */}
           <button
             onClick={handleStartGame}
-            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg text-xl touch-manipulation"
+            className="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-6 rounded-lg text-xl touch-manipulation transition-colors"
           >
             Start Game
           </button>
@@ -316,7 +316,7 @@ export default function CommanderTracker() {
         setShowDiceMenu(false);
       }}
     >
-      {/* Center Controls - Horizontal Layout with Settings */}
+      {/* Center Controls - Back to original center positioning */}
       <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-3">
         {/* Settings Button */}
         <button
@@ -369,33 +369,40 @@ export default function CommanderTracker() {
 
       {/* Players Layout */}
       <div className={`
-         gap-2 p-4 
+        ${layout === 'grid' 
+          ? `grid gap-3 p-4 min-h-screen ${
+              gameSettings.numberOfPlayers === 3 
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3' 
+                : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4'
+            } place-items-center`
+          : 'relative min-h-screen overflow-hidden'
+        }
       `}>
         {players.slice(0, gameSettings.numberOfPlayers).map((player, idx) => {
-          // Position cards based on layout
+          // Position and rotate cards based on layout
           let positionClass = '';
           let rotationClass = '';
           
           if (layout === 'table') {
             if (gameSettings.numberOfPlayers === 3) {
-              // 3-player layout: 3 cards spaced around center controls
+              // 3-player table layout: push cards closer to horizontal edges
               const positions = [
-                'absolute bottom-[5vh] left-1/2 transform -translate-x-1/2 w-[50vw] max-w-[350px]', // bottom center
-                'absolute top-[16vh] left-[4vw] w-[40vw] max-w-[280px]', // top-left
-                'absolute top-[16vh] right-[4vw] w-[40vw] max-w-[280px]' // top-right
+                'absolute bottom-[max(2rem,5vh)] left-1/2 transform -translate-x-1/2',
+                'absolute top-[max(4rem,16vh)] left-[max(0.25rem,1vw)]',
+                'absolute top-[max(4rem,16vh)] right-[max(0.25rem,1vw)]'
               ];
-              const rotations = ['', 'rotate-135', '-rotate-135'];
+              const rotations = ['', 'rotate-[135deg]', 'rotate-[-135deg]']; // bottom normal, top-left rotated, top-right rotated
               positionClass = positions[idx];
               rotationClass = rotations[idx];
             } else {
-              // 4-player layout: 4 cards in quadrants around center controls
+              // 4-player table layout: push cards closer to horizontal edges
               const positions = [
-                'absolute left-[-4vw] top-[16vh] w-[40vw] max-w-[300px]', // top-left quadrant
-                'absolute left-[-4vw] bottom-[16vh] w-[40vw] max-w-[300px]', // bottom-left quadrant
-                'absolute right-[-4vw] top-[16vh] w-[40vw] max-w-[300px]', // top-right quadrant
-                'absolute right-[-4vw] bottom-[16vh] w-[40vw] max-w-[300px]' // bottom-right quadrant
+                'absolute left-[max(0.25rem,-4vw)] top-[max(4rem,16vh)]', // top-left - push further left
+                'absolute left-[max(0.25rem,-4vw)] bottom-[max(4rem,16vh)]', // bottom-left - push further left
+                'absolute right-[max(0.25rem,-4vw)] top-[max(4rem,16vh)]', // top-right - push further right
+                'absolute right-[max(0.25rem,-4vw)] bottom-[max(4rem,16vh)]' // bottom-right - push further right
               ];
-              const rotations = ['rotate-90', 'rotate-90', '-rotate-90', '-rotate-90'];
+              const rotations = ['rotate-90', 'rotate-90', 'rotate-[-90deg]', 'rotate-[-90deg]']; // left side clockwise, right side counter-clockwise
               positionClass = positions[idx];
               rotationClass = rotations[idx];
             }
@@ -414,10 +421,13 @@ export default function CommanderTracker() {
             }}
             className={`
               border-4 rounded-xl transition-all cursor-pointer touch-manipulation
-              p-4 h-auto w-full
-              ${positionClass} ${rotationClass}
+              ${layout === 'grid' 
+                ? 'p-4 w-full max-w-sm mx-auto' 
+                : `p-4 ${positionClass} w-[clamp(300px,45vw,450px)]`
+              }
+              ${rotationClass}
               ${activePlayer === idx
-                ? `${getPlayerColor(idx)} shadow-lg ${layout === 'grid' ? 'scale-105' : 'scale-110'}`
+                ? `${getPlayerColor(idx)} shadow-lg`
                 : 'bg-gray-800 border-gray-700'
               }
             `}
@@ -425,8 +435,11 @@ export default function CommanderTracker() {
             {layout === 'grid' ? (
               // Full layout for grid view
               <>
-                {/* Player Indicator */}
+                {/* Player Number & Active Indicator */}
                 <div className="text-center mb-3">
+                  <div className="text-lg font-bold text-gray-300 mb-1">
+                    Player {idx + 1}
+                  </div>
                   {activePlayer === idx && (
                     <div className="text-sm font-semibold bg-white bg-opacity-20 rounded px-3 py-2 inline-block">
                       ACTIVE TURN
@@ -435,7 +448,7 @@ export default function CommanderTracker() {
                 </div>
 
                 {/* Timer */}
-                <div className="text-3xl md:text-4xl font-mono font-bold text-center mb-3">
+                <div className="text-2xl sm:text-3xl md:text-4xl font-mono font-bold text-center mb-3">
                   {formatTime(player.time)}
                   {player.time < 60 && player.time > 0 && (
                     <div className="text-red-400 text-xs animate-pulse mt-1">
@@ -445,17 +458,17 @@ export default function CommanderTracker() {
                 </div>
 
                 {/* Life Total */}
-                <div className="flex items-center justify-center gap-2 mb-3">
+                <div className="flex items-center justify-center gap-3 mb-4">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleLifeChange(idx, -1);
                     }}
-                    className="bg-red-600 hover:bg-red-700 p-2 rounded-lg touch-manipulation"
+                    className="bg-red-600 hover:bg-red-700 p-3 rounded-lg touch-manipulation transition-colors"
                   >
-                    <Minus size={16} />
+                    <Minus size={18} />
                   </button>
-                  <div className="text-3xl font-bold min-w-[60px] text-center">
+                  <div className="text-4xl sm:text-5xl font-bold min-w-[80px] text-center">
                     {player.life}
                   </div>
                   <button
@@ -463,14 +476,14 @@ export default function CommanderTracker() {
                       e.stopPropagation();
                       handleLifeChange(idx, 1);
                     }}
-                    className="bg-green-600 hover:bg-green-700 p-2 rounded-lg touch-manipulation"
+                    className="bg-green-600 hover:bg-green-700 p-3 rounded-lg touch-manipulation transition-colors"
                   >
-                    <Plus size={16} />
+                    <Plus size={18} />
                   </button>
                 </div>
 
                 {/* Quick Life Buttons */}
-                <div className="flex justify-center gap-1 mb-3">
+                <div className="flex justify-center gap-2 mb-3">
                   {[-5, -1, +1, +5].map(val => (
                     <button
                       key={val}
@@ -478,7 +491,7 @@ export default function CommanderTracker() {
                         e.stopPropagation();
                         handleLifeChange(idx, val);
                       }}
-                      className="bg-gray-700 hover:bg-gray-600 px-2 py-1 rounded text-xs touch-manipulation"
+                      className="bg-gray-700 hover:bg-gray-600 px-3 py-2 rounded text-sm touch-manipulation transition-colors"
                     >
                       {val > 0 ? '+' : ''}{val}
                     </button>
@@ -486,9 +499,8 @@ export default function CommanderTracker() {
                 </div>
               </>
             ) : (
-              // Compact layout for table/circle views (MTG Companion style)
+              // Compact layout for table view - restore original MTG Companion style
               <>
-                {/* Compact Player Info */}
                 <div className="flex items-center justify-between w-full h-full">
                   <div className="flex-1">
                     {activePlayer === idx && (
@@ -499,17 +511,17 @@ export default function CommanderTracker() {
                   </div>
                   
                   <div className="flex flex-col items-center">
-                    {/* Life Total - Large and prominent */}
-                    <div className="text-6xl font-bold text-center mb-1">
+                    {/* Large life total - main focus */}
+                    <div className="text-6xl sm:text-7xl md:text-8xl font-bold text-center mb-2">
                       {player.life}
                     </div>
-                    <div className="flex gap-1">
+                    <div className="flex gap-2">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleLifeChange(idx, -1);
                         }}
-                        className="bg-red-600 hover:bg-red-700 p-1 rounded text-xs touch-manipulation w-6 h-6 flex items-center justify-center"
+                        className="bg-red-600 hover:bg-red-700 p-2 rounded text-sm touch-manipulation w-8 h-8 flex items-center justify-center"
                       >
                         -
                       </button>
@@ -518,7 +530,7 @@ export default function CommanderTracker() {
                           e.stopPropagation();
                           handleLifeChange(idx, 1);
                         }}
-                        className="bg-green-600 hover:bg-green-700 p-1 rounded text-xs touch-manipulation w-6 h-6 flex items-center justify-center"
+                        className="bg-green-600 hover:bg-green-700 p-2 rounded text-sm touch-manipulation w-8 h-8 flex items-center justify-center"
                       >
                         +
                       </button>
@@ -526,8 +538,8 @@ export default function CommanderTracker() {
                   </div>
                   
                   <div className="flex-1 text-right">
-                    {/* Timer - Smaller in table view */}
-                    <div className="text-2xl font-mono font-bold">
+                    {/* Timer - smaller in table view */}
+                    <div className="text-2xl sm:text-3xl font-mono font-bold">
                       {formatTime(player.time)}
                     </div>
                     {player.time < 60 && player.time > 0 && (
@@ -609,8 +621,7 @@ export default function CommanderTracker() {
             <div className="grid grid-cols-3 gap-2">
               {[
                 { key: 'table', label: 'Table' },
-                { key: 'grid', label: '2x2' },
-                { key: 'circle', label: 'Circle' }
+                { key: 'grid', label: 'Grid' }
               ].map(({ key, label }) => (
                 <button
                   key={key}
