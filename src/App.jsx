@@ -606,7 +606,7 @@ export default function CommanderTracker() {
       </div>
 
       {/* Players Layout - Grid System */}
-      <div className="h-screen w-screen grid grid-cols-2 grid-rows-2 gap-6 p-4">
+      <div className="h-screen w-screen grid grid-cols-2 grid-rows-2 gap-[clamp(1rem,4vw,2rem)] p-[clamp(0.5rem,2vw,1rem)]">
         {players.slice(0, gameSettings.numberOfPlayers).map((player, idx) => {
           // Grid positioning and rotation for table layout
           let gridAreaClass = '';
@@ -621,7 +621,7 @@ export default function CommanderTracker() {
               'col-start-2 row-start-1'  // Player 2: top-right
             ];
             const rotations = ['rotate-90', 'rotate-90', 'rotate-[-90deg]'];
-            const alignments = ['flex justify-start items-center', 'flex justify-start items-center', 'flex justify-end items-center'];
+            const alignments = ['flex justify-center items-center', 'flex justify-center items-center', 'flex justify-center items-center'];
             gridAreaClass = gridAreas[idx] || '';
             rotationClass = rotations[idx] || '';
             alignmentClass = alignments[idx] || '';
@@ -634,7 +634,7 @@ export default function CommanderTracker() {
               'col-start-2 row-start-2'  // bottom-right
             ];
             const rotations = ['rotate-90', 'rotate-90', 'rotate-[-90deg]', 'rotate-[-90deg]'];
-            const alignments = ['flex justify-start items-center', 'flex justify-start items-center', 'flex justify-end items-center', 'flex justify-end items-center'];
+            const alignments = ['flex justify-center items-center', 'flex justify-center items-center', 'flex justify-center items-center', 'flex justify-center items-center'];
             gridAreaClass = gridAreas[idx] || '';
             rotationClass = rotations[idx] || '';
             alignmentClass = alignments[idx] || '';
