@@ -21,3 +21,24 @@ html, body {
   width: 100vw;
   overflow: hidden;
 }
+
+/* Custom responsive utilities for better scaling */
+@layer utilities {
+  .min-gap-2 {
+    gap: max(0.5rem, 2vw);
+  }
+  
+  .min-p-3 {
+    padding: max(0.75rem, 2.5vw);
+  }
+  
+  .min-p-4 {
+    padding: max(1rem, 3vw);
+  }
+  
+  /* Touch-friendly minimum sizes */
+  .touch-min {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

@@ -535,21 +535,21 @@ export default function CommanderTracker() {
       }`}
       onClick={() => {}}
     >
-      {/* Center Controls - Back to original center positioning */}
-      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-3">
+      {/* Center Controls - Responsive sizing with percentage-based dimensions */}
+      <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-40 flex items-center gap-4">
         {/* Settings Button */}
         <button
           onClick={(e) => {
             e.stopPropagation();
             handleSettingsButtonClick();
           }}
-          className={`p-3 rounded-full shadow-lg touch-manipulation transition-colors ${
+          className={`p-4 rounded-full shadow-lg touch-manipulation transition-colors ${
             settingsButtonState === 'normal' ? 'bg-gray-800 hover:bg-gray-700' :
             settingsButtonState === 'yellow' ? 'bg-yellow-600 hover:bg-yellow-700' :
             'bg-red-600 hover:bg-red-700'
           }`}
         >
-          <Menu size={18} />
+          <Menu className="w-6 h-6" />
         </button>
         
         {/* Reset Game Button */}
@@ -558,13 +558,13 @@ export default function CommanderTracker() {
             e.stopPropagation();
             handleResetButtonClick();
           }}
-          className={`p-3 rounded-full shadow-lg touch-manipulation transition-colors ${
+          className={`p-4 rounded-full shadow-lg touch-manipulation transition-colors ${
             resetButtonState === 'normal' ? 'bg-purple-600 hover:bg-purple-700' :
             resetButtonState === 'orange' ? 'bg-orange-600 hover:bg-orange-700' :
             'bg-red-600 hover:bg-red-700'
           }`}
         >
-          <RotateCcw size={18} />
+          <RotateCcw className="w-6 h-6" />
         </button>
         
         {/* Play/Pause Button */}
@@ -573,13 +573,13 @@ export default function CommanderTracker() {
             e.stopPropagation();
             setIsRunning(!isRunning);
           }}
-          className={`p-4 rounded-full shadow-lg touch-manipulation ${
+          className={`p-5 rounded-full shadow-lg touch-manipulation ${
             isRunning 
               ? 'bg-red-600 hover:bg-red-700' 
               : 'bg-green-600 hover:bg-green-700'
           }`}
         >
-          {isRunning ? <Pause size={24} /> : <Play size={24} />}
+          {isRunning ? <Pause className="w-8 h-8" /> : <Play className="w-8 h-8" />}
         </button>
         
         {/* Previous Player Button */}
@@ -588,9 +588,9 @@ export default function CommanderTracker() {
             e.stopPropagation();
             previousPlayer();
           }}
-          className="bg-orange-600 hover:bg-orange-700 p-3 rounded-full shadow-lg touch-manipulation"
+          className="bg-orange-600 hover:bg-orange-700 p-4 rounded-full shadow-lg touch-manipulation"
         >
-          <ArrowLeft size={18} />
+          <ArrowLeft className="w-6 h-6" />
         </button>
         
         {/* Next Player Button */}
@@ -599,68 +599,76 @@ export default function CommanderTracker() {
             e.stopPropagation();
             nextPlayer();
           }}
-          className="bg-blue-600 hover:bg-blue-700 p-3 rounded-full shadow-lg touch-manipulation"
+          className="bg-blue-600 hover:bg-blue-700 p-4 rounded-full shadow-lg touch-manipulation"
         >
-          <ArrowRight size={18} />
+          <ArrowRight className="w-6 h-6" />
         </button>
       </div>
 
-      {/* Players Layout */}
-      <div className="relative h-screen w-screen overflow-hidden">
+      {/* Players Layout - Grid System */}
+      <div className="h-screen w-screen grid grid-cols-2 grid-rows-2 gap-6 p-4">
         {players.slice(0, gameSettings.numberOfPlayers).map((player, idx) => {
-          // Position and rotate cards for table layout
-          let positionClass = '';
+          // Grid positioning and rotation for table layout
+          let gridAreaClass = '';
           let rotationClass = '';
+          let alignmentClass = '';
           
           if (gameSettings.numberOfPlayers === 3) {
-            // 3-player table layout: use 4-player pattern (first 3 positions)
-            const positions = [
-              'absolute left-[max(0.25rem,-4vw)] top-[max(4rem,16vh)]', // Player 0: left-top
-              'absolute left-[max(0.25rem,-4vw)] bottom-[max(4rem,16vh)]', // Player 1: left-bottom  
-              'absolute right-[max(0.25rem,-4vw)] top-[max(4rem,16vh)]' // Player 2: right-top
+            // 3-player grid layout
+            const gridAreas = [
+              'col-start-1 row-start-1', // Player 0: top-left
+              'col-start-1 row-start-2', // Player 1: bottom-left
+              'col-start-2 row-start-1'  // Player 2: top-right
             ];
-            const rotations = ['rotate-90', 'rotate-90', 'rotate-[-90deg]']; // left side clockwise, right side counter-clockwise
-            positionClass = positions[idx];
-            rotationClass = rotations[idx];
+            const rotations = ['rotate-90', 'rotate-90', 'rotate-[-90deg]'];
+            const alignments = ['flex justify-start items-center', 'flex justify-start items-center', 'flex justify-end items-center'];
+            gridAreaClass = gridAreas[idx] || '';
+            rotationClass = rotations[idx] || '';
+            alignmentClass = alignments[idx] || '';
           } else {
-            // 4-player table layout: push cards closer to horizontal edges
-            const positions = [
-              'absolute left-[max(0.25rem,-4vw)] top-[max(4rem,16vh)]', // top-left - push further left
-              'absolute left-[max(0.25rem,-4vw)] bottom-[max(4rem,16vh)]', // bottom-left - push further left
-              'absolute right-[max(0.25rem,-4vw)] top-[max(4rem,16vh)]', // top-right - push further right
-              'absolute right-[max(0.25rem,-4vw)] bottom-[max(4rem,16vh)]' // bottom-right - push further right
+            // 4-player grid layout
+            const gridAreas = [
+              'col-start-1 row-start-1', // top-left
+              'col-start-1 row-start-2', // bottom-left
+              'col-start-2 row-start-1', // top-right
+              'col-start-2 row-start-2'  // bottom-right
             ];
-            const rotations = ['rotate-90', 'rotate-90', 'rotate-[-90deg]', 'rotate-[-90deg]']; // left side clockwise, right side counter-clockwise
-            positionClass = positions[idx];
-            rotationClass = rotations[idx];
+            const rotations = ['rotate-90', 'rotate-90', 'rotate-[-90deg]', 'rotate-[-90deg]'];
+            const alignments = ['flex justify-start items-center', 'flex justify-start items-center', 'flex justify-end items-center', 'flex justify-end items-center'];
+            gridAreaClass = gridAreas[idx] || '';
+            rotationClass = rotations[idx] || '';
+            alignmentClass = alignments[idx] || '';
           }
 
           return (
           <div
             key={player.id}
-            id={`card-${idx + 1}`}
-            className={`
-              border-4 rounded-xl transition-all touch-manipulation 
-              p-3 ${positionClass} w-[clamp(260px,35vw,350px)] h-36 ${rotationClass}
-              ${player.isDead
-                ? 'bg-gray-800 border-red-600 opacity-60'
-                : (isSelectingStartingPlayer ? animatedActivePlayer === idx : activePlayer === idx)
-                ? `${getPlayerColor(idx)} shadow-lg`
-                : getPlayerColorDefault(idx)
-              }
-            `}
+            className={`${gridAreaClass} ${alignmentClass}`}
           >
+            <div
+              id={`card-${idx + 1}`}
+              className={`
+                border-4 rounded-xl transition-all touch-manipulation 
+                p-3 w-[clamp(250px,35vw,350px)] h-[clamp(140px,18vh,200px)] ${rotationClass}
+                ${player.isDead
+                  ? 'bg-gray-800 border-red-600 opacity-60'
+                  : (isSelectingStartingPlayer ? animatedActivePlayer === idx : activePlayer === idx)
+                  ? `${getPlayerColor(idx)} shadow-lg`
+                  : getPlayerColorDefault(idx)
+                }
+              `}
+            >
             {/* Table layout content */}
             <div className="flex items-center justify-between w-full h-full">
               <div className="flex-1">
                 {/* Death Button - positioned in top left */}
-                <div className="absolute top-1 left-1">
+                <div className="absolute top-2 left-2">
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
                       handleDeathButtonClick(idx);
                     }}
-                    className={`w-8 h-8 rounded-full text-lg transition-colors ${
+                    className={`w-[clamp(2rem,6vw,3rem)] h-[clamp(2rem,5vh,2.5rem)] rounded-full text-[clamp(0.9rem,2.5vw,1.3rem)] transition-colors ${
                       player.isDead 
                         ? deathButtonStates[idx] === 'normal' || !deathButtonStates[idx]
                           ? 'bg-red-800 border-2 border-red-600 hover:bg-red-700'
@@ -682,7 +690,7 @@ export default function CommanderTracker() {
               
               <div className="flex flex-col items-center">
                 {/* Life total */}
-                <div className="text-5xl sm:text-6xl md:text-7xl font-bold text-center mb-2">
+                <div className="text-[clamp(2rem,8vw,4.5rem)] font-bold text-center mb-2">
                   {player.life}
                 </div>
                 {/* Timer positioned below life total */}
@@ -703,14 +711,14 @@ export default function CommanderTracker() {
                       startHoldRepeat(idx, -1);
                     }}
                     onTouchEnd={stopHoldRepeat}
-                    className="bg-red-600 hover:bg-red-700 p-3 rounded text-lg touch-manipulation w-10 h-10 flex items-center justify-center"
+                    className="bg-red-600 hover:bg-red-700 p-2 rounded text-[clamp(0.8rem,2.5vw,1.2rem)] touch-manipulation w-[clamp(2.5rem,8vw,4rem)] h-[clamp(2.5rem,6vh,3.5rem)] flex items-center justify-center"
                   >
                     -
                   </button>
-                  <div className="text-2xl sm:text-3xl font-mono font-bold text-center min-w-[120px]">
+                  <div className="text-[clamp(1.2rem,4vw,2rem)] font-mono font-bold text-center min-w-[clamp(100px,16vw,160px)]">
                     {formatTime(player.time)}
                     {player.time < 60 && player.time > 0 && (
-                      <div className="text-red-400 text-xs animate-pulse mt-1">
+                      <div className="text-red-400 text-[clamp(0.7rem,1.8vw,1rem)] animate-pulse mt-1">
                         LOW!
                       </div>
                     )}
@@ -731,7 +739,7 @@ export default function CommanderTracker() {
                       startHoldRepeat(idx, 1);
                     }}
                     onTouchEnd={stopHoldRepeat}
-                    className="bg-green-600 hover:bg-green-700 p-3 rounded text-lg touch-manipulation w-10 h-10 flex items-center justify-center"
+                    className="bg-green-600 hover:bg-green-700 p-2 rounded text-[clamp(0.8rem,2.5vw,1.2rem)] touch-manipulation w-[clamp(2.5rem,8vw,4rem)] h-[clamp(2.5rem,6vh,3.5rem)] flex items-center justify-center"
                   >
                     +
                   </button>
@@ -743,20 +751,20 @@ export default function CommanderTracker() {
             </div>
             
             {/* Commander Damage Button */}
-            <div className="absolute top-1 right-1">
+            <div className="absolute top-2 right-2">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   setCommanderDamagePlayerIndex(idx);
                   setShowCommanderDamageModal(true);
                 }}
-                className="bg-gray-700 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs transition-colors"
+                className="bg-gray-700 hover:bg-gray-600 text-white px-3 py-1 rounded text-[clamp(0.8rem,2.2vw,1.1rem)] transition-colors"
                 title="Commander Damage"
               >
                 dmg
               </button>
             </div>
-
+            </div>
           </div>
         );
         })}
@@ -800,24 +808,20 @@ export default function CommanderTracker() {
               'rotate-[-90deg]' // right-bottom
             )
           }`}>
-            {/* Modal content - responsive sizing */}
+            {/* Modal content - percentage-based responsive sizing */}
             <div 
-              className="bg-gray-800 rounded-lg shadow-2xl border-4 border-gray-600 flex flex-col"
-              style={{
-                width: 'min(125vw, 1000px)',
-                height: 'min(50vh, 40vh)'
-              }}
+              className="bg-gray-800 rounded-lg shadow-2xl border-4 border-gray-600 flex flex-col w-[clamp(300px,85vw,900px)] h-[clamp(250px,45vh,500px)]"
               onClick={(e) => e.stopPropagation()}
             >
             
             {/* Header with Life Display */}
-            <div className="flex items-center p-3 border-b border-gray-600 flex-shrink-0">
-              <h2 className="text-base font-bold text-white flex-1">
+            <div className="flex items-center p-[clamp(0.75rem,2vh,1.5rem)] border-b border-gray-600 flex-shrink-0">
+              <h2 className="text-[clamp(0.875rem,2.5vw,1.25rem)] font-bold text-white flex-1">
                 P{commanderDamagePlayerIndex + 1} Commander Damage
               </h2>
               <div className="text-center flex-1">
-                <span className="text-sm text-gray-300 mr-2">Life:</span>
-                <span className="text-2xl font-bold text-white">
+                <span className="text-[clamp(0.75rem,2vw,1rem)] text-gray-300 mr-[1vw]">Life:</span>
+                <span className="text-[clamp(1.25rem,3.5vw,2rem)] font-bold text-white">
                   {players[commanderDamagePlayerIndex]?.life || 0}
                 </span>
               </div>
@@ -827,7 +831,7 @@ export default function CommanderTracker() {
                     setShowCommanderDamageModal(false);
                     setCommanderDamagePlayerIndex(null);
                   }}
-                  className="text-gray-400 hover:text-white text-xl font-bold w-8 h-8 flex items-center justify-center"
+                  className="text-gray-400 hover:text-white text-[clamp(1.25rem,3vw,1.75rem)] font-bold w-[clamp(2rem,5vw,3rem)] h-[clamp(2rem,4vh,2.5rem)] flex items-center justify-center"
                 >
                   ×
                 </button>
@@ -835,8 +839,8 @@ export default function CommanderTracker() {
             </div>
 
             {/* Commander Damage Options - Fill remaining space */}
-            <div className="flex-1 p-2 sm:p-4 md:p-6 flex items-center justify-center overflow-hidden">
-              <div className="flex gap-2 sm:gap-4 md:gap-6 justify-center items-center">
+            <div className="flex-1 p-[clamp(0.5rem,2vh,1.5rem)] flex items-center justify-center overflow-hidden">
+              <div className="flex gap-[clamp(0.5rem,2vw,1.5rem)] justify-center items-center">
                 {players.map((_, sourceIdx) => {
                   if (sourceIdx === commanderDamagePlayerIndex) return null;
                   const displayIdx = sourceIdx > commanderDamagePlayerIndex ? sourceIdx - 1 : sourceIdx;
@@ -845,28 +849,28 @@ export default function CommanderTracker() {
                   return (
                     <div
                       key={sourceIdx}
-                      className={`${getPlayerColorCommanderDamage(sourceIdx)} rounded-lg p-3 sm:p-4 md:p-5 text-center border-4 flex-1 min-w-[120px] sm:min-w-[140px] md:min-w-[160px] max-w-[140px] sm:max-w-[160px] md:max-w-[180px] ${
+                      className={`${getPlayerColorCommanderDamage(sourceIdx)} rounded-lg p-[clamp(0.75rem,2vh,1.25rem)] text-center border-4 flex-1 min-w-[clamp(100px,15vw,140px)] max-w-[clamp(140px,20vw,180px)] ${
                         currentDamage >= 21 ? 'border-red-500' : ''
                       }`}
                     >
-                      <div className="text-base font-bold text-white mb-2">
+                      <div className="text-[clamp(0.875rem,2.5vw,1.125rem)] font-bold text-white mb-[1vh]">
                         P{sourceIdx + 1}
                       </div>
-                      <div className="text-3xl font-bold mb-3 text-white">
+                      <div className="text-[clamp(1.5rem,5vw,3rem)] font-bold mb-[1.5vh] text-white">
                         {currentDamage}
                       </div>
                       {currentDamage >= 21 && (
-                        <div className="text-red-600 font-bold text-sm mb-2 animate-pulse">
+                        <div className="text-red-600 font-bold text-[clamp(0.75rem,2vw,1rem)] mb-[1vh] animate-pulse">
                           LETHAL!
                         </div>
                       )}
-                      <div className="flex items-center justify-center gap-2 sm:gap-3 md:gap-4 mb-3">
+                      <div className="flex items-center justify-center gap-[clamp(0.5rem,1.5vw,1rem)] mb-[1.5vh]">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, -1);
                           }}
-                          className="bg-gray-800 hover:bg-gray-700 border-2 border-red-600 text-white text-base sm:text-lg md:text-xl font-bold w-9 h-12 sm:w-10 sm:h-14 md:w-11 md:h-16 rounded touch-manipulation transition-colors"
+                          className="bg-gray-800 hover:bg-gray-700 border-2 border-red-600 text-white text-[clamp(0.875rem,2.5vw,1.25rem)] font-bold w-[clamp(2.25rem,6vw,3rem)] h-[clamp(3rem,7vh,4rem)] rounded touch-manipulation transition-colors"
                         >
                           -1
                         </button>
@@ -875,18 +879,18 @@ export default function CommanderTracker() {
                             e.stopPropagation();
                             handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, 1);
                           }}
-                          className="bg-gray-800 hover:bg-gray-700 border-2 border-green-600 text-white text-base sm:text-lg md:text-xl font-bold w-9 h-12 sm:w-10 sm:h-14 md:w-11 md:h-16 rounded touch-manipulation transition-colors"
+                          className="bg-gray-800 hover:bg-gray-700 border-2 border-green-600 text-white text-[clamp(0.875rem,2.5vw,1.25rem)] font-bold w-[clamp(2.25rem,6vw,3rem)] h-[clamp(3rem,7vh,4rem)] rounded touch-manipulation transition-colors"
                         >
                           +1
                         </button>
                       </div>
-                      <div className="flex justify-center gap-2 sm:gap-3 md:gap-4">
+                      <div className="flex justify-center gap-[clamp(0.5rem,1.5vw,1rem)]">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, -5);
                           }}
-                          className="bg-red-600 hover:bg-red-700 border-2 border-red-600 text-white px-3 py-2.5 sm:px-4 sm:py-3 md:px-5 md:py-4 rounded text-base sm:text-lg md:text-xl font-bold touch-manipulation transition-colors"
+                          className="bg-red-600 hover:bg-red-700 border-2 border-red-600 text-white px-[clamp(0.75rem,2vw,1.25rem)] py-[clamp(0.625rem,1.5vh,1rem)] rounded text-[clamp(0.875rem,2.5vw,1.25rem)] font-bold touch-manipulation transition-colors"
                         >
                           -5
                         </button>
@@ -895,7 +899,7 @@ export default function CommanderTracker() {
                             e.stopPropagation();
                             handleCommanderDamage(commanderDamagePlayerIndex, displayIdx, 5);
                           }}
-                          className="bg-green-600 hover:bg-green-700 border-2 border-green-600 text-white px-3 py-2.5 sm:px-4 sm:py-3 md:px-5 md:py-4 rounded text-base sm:text-lg md:text-xl font-bold touch-manipulation transition-colors"
+                          className="bg-green-600 hover:bg-green-700 border-2 border-green-600 text-white px-[clamp(0.75rem,2vw,1.25rem)] py-[clamp(0.625rem,1.5vh,1rem)] rounded text-[clamp(0.875rem,2.5vw,1.25rem)] font-bold touch-manipulation transition-colors"
                         >
                           +5
                         </button>
