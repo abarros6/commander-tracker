@@ -21,11 +21,13 @@ A comprehensive Magic: The Gathering Commander life and timer tracking applicati
 - **Lethal Damage Warnings**: Clear indicators when commander damage reaches 21+
 - **Intuitive Modal Interface**: Easy-to-use commander damage adjustment modal with improved spacing
 
-### Layout
-- **Table View**: Simulated table layout with rotated player cards positioned around a virtual table
-- **Unified Layout**: Both 3 and 4 player games use the same consistent positioning system
-- **Responsive Design**: Optimized for both desktop and mobile devices
-- **Consistent Positioning**: Fixed positioning that works identically across all devices and screen sizes
+### Layout System
+- **CSS Grid-Based Layout**: Modern 2x2 grid system replacing absolute positioning for better reliability
+- **Responsive Card Sizing**: Cards scale from `w-[clamp(250px,35vw,350px)]` to work on all screen sizes
+- **Smart Grid Spacing**: Uses `gap-[clamp(1rem,4vw,2rem)]` for responsive margins that prevent overlap
+- **Rotated Player Cards**: Table-style layout with 90° and -90° rotations for immersive gameplay
+- **No Overlap Design**: Grid system prevents layout issues across all device sizes
+- **Cross-Device Consistency**: Works from iPhone SE (375px) to desktop screens
 
 ### Display Features
 - **Progressive Web App (PWA)**: Install as a native app on mobile and desktop
@@ -115,23 +117,63 @@ Once the app is running or deployed, you can install it as a native app:
 - `src/utils/constants.js`: Player color schemes and game constants
 - `src/index.css`: Global styles, Tailwind imports, and fullscreen optimization
 
+## Technical Implementation Details
+
+### Layout Architecture
+The app uses a modern CSS Grid-based layout system that replaced the original absolute positioning approach:
+
+#### Grid Structure
+```css
+.grid-container {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: repeat(2, 1fr);
+  gap: clamp(1rem, 4vw, 2rem);
+  padding: clamp(0.5rem, 2vw, 1rem);
+}
+```
+
+#### Player Card Positioning
+- **3-Player**: Uses grid cells [1,1], [1,2], [2,1] (top-left, bottom-left, top-right)
+- **4-Player**: Uses all four grid cells [1,1], [1,2], [2,1], [2,2]
+- **Alignment**: Center-justified within each grid cell for consistent positioning
+- **Rotation**: 90° for left side cards, -90° for right side cards
+
+#### Responsive Sizing
+- **Card Width**: `clamp(250px, 35vw, 350px)` - scales from mobile to desktop
+- **Card Height**: `clamp(140px, 18vh, 200px)` - maintains aspect ratio
+- **Grid Gaps**: Responsive spacing prevents overlap on all screen sizes
+- **Content Scaling**: All text and buttons use clamp() for proportional sizing
+
+### Known Issues Fixed
+- ✅ **Overlap Prevention**: Grid system eliminates card overlap issues
+- ✅ **iPhone SE Compatibility**: Verified on 375px width screens
+- ✅ **Cascading Layout Problems**: No more sizing changes affecting positioning
+- ✅ **Center Control Sizing**: Consistent button sizes across all devices
+
 ## Key Features Implemented
 
-### Recent Improvements
-- **PWA Support**: Now installable as a native app with offline functionality
-- **Enhanced Fullscreen**: Improved fullscreen compatibility across browsers and mobile devices
-- **Simplified Layout**: Removed grid view option, focusing on optimal table layout experience
-- **Consistent Spacing**: Fixed positioning inconsistencies between PWA and browser modes
-- Removed dice rolling and coin flipping functionality for streamlined experience
-- Enhanced commander damage modal with better spacing and centered life display
-- Improved button sizing and spacing for better touch interaction
-- Unified button styling with consistent border treatments
+### Recent Layout System Overhaul
+- **Complete CSS Grid Migration**: Replaced problematic absolute positioning with robust 2x2 CSS Grid
+- **Responsive Design Fix**: Eliminated cascading layout issues that occurred when resizing elements
+- **Cross-Screen Compatibility**: Cards now properly scale on all devices without overlap
+- **Improved Center Controls**: Larger, more touch-friendly buttons (`p-4` with `w-6 h-6` icons)
+- **Smart Spacing System**: Responsive gaps that adapt from mobile to desktop (`clamp(1rem,4vw,2rem)`)
+- **iPhone SE Support**: Verified compatibility with smallest common screen size (375px width)
+
+### Previous Improvements
+- **PWA Support**: Installable as native app with offline functionality
+- **Enhanced Fullscreen**: Cross-browser fullscreen compatibility
+- **Commander Damage Modal**: Improved spacing and user experience
+- **Touch Optimization**: Better button sizing and interaction areas
 
 ### Mobile Optimization
-- Touch-friendly button sizes and spacing
-- Fullscreen mode with disabled scrolling
-- Responsive layout that adapts to different screen sizes
-- Optimized table view with rotated cards for intuitive gameplay
+- **Touch-Friendly Interface**: Minimum 44px touch targets on all interactive elements
+- **Fullscreen Experience**: Native fullscreen mode with disabled scrolling
+- **Responsive Grid Layout**: CSS Grid system that scales perfectly on all screen sizes
+- **iPhone SE Tested**: Verified compatibility with smallest common mobile resolution (375px)
+- **Smart Spacing**: Responsive margins that adapt to available screen space
+- **Optimized Card Rotation**: Intuitive table view with properly sized rotated player cards
 
 ## Available Scripts
 

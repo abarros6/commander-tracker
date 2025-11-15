@@ -614,13 +614,13 @@ export default function CommanderTracker() {
           let alignmentClass = '';
           
           if (gameSettings.numberOfPlayers === 3) {
-            // 3-player grid layout
+            // 3-player layout: top-left, top-right, bottom-center
             const gridAreas = [
               'col-start-1 row-start-1', // Player 0: top-left
-              'col-start-1 row-start-2', // Player 1: bottom-left
+              'col-start-1 row-start-2 col-end-3', // Player 1: bottom-center (spans both columns)
               'col-start-2 row-start-1'  // Player 2: top-right
             ];
-            const rotations = ['rotate-90', 'rotate-90', 'rotate-[-90deg]'];
+            const rotations = ['rotate-90', '', 'rotate-[-90deg]']; // No rotation for bottom player
             const alignments = ['flex justify-center items-center', 'flex justify-center items-center', 'flex justify-center items-center'];
             gridAreaClass = gridAreas[idx] || '';
             rotationClass = rotations[idx] || '';
@@ -648,7 +648,7 @@ export default function CommanderTracker() {
             <div
               id={`card-${idx + 1}`}
               className={`
-                border-4 rounded-xl transition-all touch-manipulation 
+                border-4 rounded-xl transition-all touch-manipulation relative
                 p-3 w-[clamp(250px,35vw,350px)] h-[clamp(140px,18vh,200px)] ${rotationClass}
                 ${player.isDead
                   ? 'bg-gray-800 border-red-600 opacity-60'
