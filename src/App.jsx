@@ -810,7 +810,7 @@ export default function CommanderTracker() {
           }`}>
             {/* Modal content - percentage-based responsive sizing */}
             <div 
-              className="bg-gray-800 rounded-lg shadow-2xl border-4 border-gray-600 flex flex-col w-[clamp(300px,85vw,900px)] h-[clamp(250px,45vh,500px)]"
+              className="bg-gray-800 rounded-lg shadow-2xl border-4 border-gray-600 flex flex-col w-[clamp(500px,95vw,1200px)] h-[clamp(250px,45vh,500px)]"
               onClick={(e) => e.stopPropagation()}
             >
             
