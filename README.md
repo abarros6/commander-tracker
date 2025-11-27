@@ -151,15 +151,36 @@ The app uses a modern CSS Grid-based layout system that replaced the original ab
 - ✅ **Cascading Layout Problems**: No more sizing changes affecting positioning
 - ✅ **Center Control Sizing**: Consistent button sizes across all devices
 
+## Development Status & Recent Work
+
+### Current State (Latest Session)
+- **Floating Number System**: Individual animated life change indicators with proper rotation matching player cards
+- **Button Enhancements**: Enhanced visual feedback for +/- life buttons with shadows, borders, and active states  
+- **Rotation Fix**: Fixed floating number orientation issues to properly match rotated player cards
+- **Animation Timing**: 1.5-second float-up animations with proper CSS keyframes for each rotation (0°, 90°, -90°)
+- **No Haptic Feedback**: Haptic feedback was implemented but removed due to compatibility issues
+
+### Attempted Features (Removed)
+- **Running Total System**: Tried implementing accumulating floating numbers but reverted due to timing issues
+- **Haptic Feedback**: Added vibration to center control buttons but removed due to site breakage
+- **2-Second Timer Logic**: Complex button press state tracking that caused animation problems
+
 ## Key Features Implemented
 
-### Recent Layout System Overhaul
+### Layout System Overhaul
 - **Complete CSS Grid Migration**: Replaced problematic absolute positioning with robust 2x2 CSS Grid
 - **Responsive Design Fix**: Eliminated cascading layout issues that occurred when resizing elements
 - **Cross-Screen Compatibility**: Cards now properly scale on all devices without overlap
 - **Improved Center Controls**: Larger, more touch-friendly buttons (`p-4` with `w-6 h-6` icons)
 - **Smart Spacing System**: Responsive gaps that adapt from mobile to desktop (`clamp(1rem,4vw,2rem)`)
 - **iPhone SE Support**: Verified compatibility with smallest common screen size (375px width)
+
+### Recent Floating Number Enhancements  
+- **Floating Life Change Indicators**: Animated numbers appear when life totals change (+1, -1, +5, -5)
+- **Orientation-Aware Animation**: Floating numbers rotate to match each player's card orientation
+- **Individual Number Display**: Each button press creates separate floating animation
+- **Enhanced Button Visual Feedback**: Improved +/- button styling with shadows, borders, and active states
+- **1.5-Second Animation Duration**: Numbers float upward and fade over 1.5 seconds
 
 ### Previous Improvements
 - **PWA Support**: Installable as native app with offline functionality
