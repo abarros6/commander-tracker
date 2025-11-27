@@ -76,25 +76,6 @@ export default function CommanderTracker() {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const triggerHaptic = () => {
-    try {
-      // Try modern Vibration API first
-      if (navigator.vibrate) {
-        navigator.vibrate(50); // Short 50ms vibration
-      }
-      // Try older webkit haptic feedback (iOS Safari)
-      else if (window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate(50);
-      }
-      // Try iOS haptic feedback (if available)
-      else if (window.navigator && window.navigator.vibrate) {
-        window.navigator.vibrate([50]);
-      }
-    } catch (error) {
-      // Silently fail if haptics not supported
-      console.log('Haptic feedback not supported');
-    }
-  };
 
   const handleLifeChange = (playerIdx, change) => {
     setPlayers(prev => prev.map((p, idx) => 
@@ -577,7 +558,6 @@ export default function CommanderTracker() {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            triggerHaptic();
             handleSettingsButtonClick();
           }}
           className={`p-4 rounded-full shadow-lg touch-manipulation transition-colors ${
@@ -593,7 +573,6 @@ export default function CommanderTracker() {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            triggerHaptic();
             handleResetButtonClick();
           }}
           className={`p-4 rounded-full shadow-lg touch-manipulation transition-colors ${
@@ -609,7 +588,6 @@ export default function CommanderTracker() {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            triggerHaptic();
             setIsRunning(!isRunning);
           }}
           className={`p-5 rounded-full shadow-lg touch-manipulation ${
@@ -625,7 +603,6 @@ export default function CommanderTracker() {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            triggerHaptic();
             previousPlayer();
           }}
           className="bg-orange-600 hover:bg-orange-700 p-4 rounded-full shadow-lg touch-manipulation"
@@ -637,7 +614,6 @@ export default function CommanderTracker() {
         <button
           onClick={(e) => {
             e.stopPropagation();
-            triggerHaptic();
             nextPlayer();
           }}
           className="bg-blue-600 hover:bg-blue-700 p-4 rounded-full shadow-lg touch-manipulation"
