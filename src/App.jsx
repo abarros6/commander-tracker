@@ -17,6 +17,7 @@ export default function CommanderTracker() {
   const [showCommanderDamageModal, setShowCommanderDamageModal] = useState(false);
   const [commanderDamagePlayerIndex, setCommanderDamagePlayerIndex] = useState(null);
   const [deathButtonStates, setDeathButtonStates] = useState({});
+  const [floatingNumbers, setFloatingNumbers] = useState([]);
   const deathTimeoutRefs = useRef({});
   const intervalRef = useRef(null);
   const animationRef = useRef(null);
@@ -77,8 +78,22 @@ export default function CommanderTracker() {
 
   const handleLifeChange = (playerIdx, change) => {
     setPlayers(prev => prev.map((p, idx) => 
-      idx === playerIdx ? { ...p, life: Math.max(0, p.life + change) } : p
+      idx === playerIdx ? { ...p, life: p.life + change } : p
     ));
+    
+    // Add floating number animation
+    const id = Math.random();
+    setFloatingNumbers(prev => [...prev, {
+      id,
+      playerIdx,
+      change,
+      timestamp: Date.now()
+    }]);
+    
+    // Remove floating number after animation
+    setTimeout(() => {
+      setFloatingNumbers(prev => prev.filter(num => num.id !== id));
+    }, 1500);
   };
 
   const startHoldRepeat = (playerIdx, change) => {
@@ -339,6 +354,7 @@ export default function CommanderTracker() {
       if (timeout) clearTimeout(timeout);
     });
     deathTimeoutRefs.current = {};
+    
     
     const timeInSeconds = gameSettings.timerMinutes * 60;
     const newPlayers = createPlayers(gameSettings.numberOfPlayers, gameSettings.startingLife, timeInSeconds);
@@ -711,7 +727,7 @@ export default function CommanderTracker() {
                       startHoldRepeat(idx, -1);
                     }}
                     onTouchEnd={stopHoldRepeat}
-                    className="bg-red-600 hover:bg-red-700 p-2 rounded text-[clamp(0.8rem,2.5vw,1.2rem)] touch-manipulation w-[clamp(2.5rem,8vw,4rem)] h-[clamp(2.5rem,6vh,3.5rem)] flex items-center justify-center"
+                    className="bg-red-600 hover:bg-red-700 active:bg-red-800 active:scale-95 p-2 rounded text-[clamp(0.8rem,2.5vw,1.2rem)] touch-manipulation w-[clamp(2.5rem,8vw,4rem)] h-[clamp(2.5rem,6vh,3.5rem)] flex items-center justify-center font-bold shadow-lg hover:shadow-xl transition-all duration-150 border-2 border-red-500 hover:border-red-400"
                   >
                     -
                   </button>
@@ -739,7 +755,7 @@ export default function CommanderTracker() {
                       startHoldRepeat(idx, 1);
                     }}
                     onTouchEnd={stopHoldRepeat}
-                    className="bg-green-600 hover:bg-green-700 p-2 rounded text-[clamp(0.8rem,2.5vw,1.2rem)] touch-manipulation w-[clamp(2.5rem,8vw,4rem)] h-[clamp(2.5rem,6vh,3.5rem)] flex items-center justify-center"
+                    className="bg-green-600 hover:bg-green-700 active:bg-green-800 active:scale-95 p-2 rounded text-[clamp(0.8rem,2.5vw,1.2rem)] touch-manipulation w-[clamp(2.5rem,8vw,4rem)] h-[clamp(2.5rem,6vh,3.5rem)] flex items-center justify-center font-bold shadow-lg hover:shadow-xl transition-all duration-150 border-2 border-green-500 hover:border-green-400"
                   >
                     +
                   </button>
@@ -769,6 +785,67 @@ export default function CommanderTracker() {
         );
         })}
       </div>
+
+      {/* Floating damage numbers */}
+      {floatingNumbers.map(num => {
+        const player = players[num.playerIdx];
+        if (!player) return null;
+        
+        // Calculate position based on player index and grid layout
+        let positionStyle = {};
+        
+        if (gameSettings.numberOfPlayers === 3) {
+          // 3-player positioning
+          const positions = [
+            { left: '25%', top: '25%' }, // Player 0: top-left
+            { left: '50%', top: '75%' }, // Player 1: bottom-center
+            { left: '75%', top: '25%' }  // Player 2: top-right
+          ];
+          positionStyle = positions[num.playerIdx] || positions[0];
+        } else {
+          // 4-player positioning
+          const positions = [
+            { left: '25%', top: '25%' }, // Player 0: top-left
+            { left: '25%', top: '75%' }, // Player 1: bottom-left
+            { left: '75%', top: '25%' }, // Player 2: top-right
+            { left: '75%', top: '75%' }  // Player 3: bottom-right
+          ];
+          positionStyle = positions[num.playerIdx] || positions[0];
+        }
+        
+        // Get the correct animation based on player card rotation
+        let animationName = 'floatUp 1.5s ease-out forwards';
+        if (gameSettings.numberOfPlayers === 3) {
+          // 3-player rotations: ['rotate-90', '', 'rotate-[-90deg]']
+          if (num.playerIdx === 0) animationName = 'floatUp90 1.5s ease-out forwards'; // Player 0: rotate-90
+          if (num.playerIdx === 1) animationName = 'floatUp 1.5s ease-out forwards'; // Player 1: no rotation
+          if (num.playerIdx === 2) animationName = 'floatUpNeg90 1.5s ease-out forwards'; // Player 2: rotate-[-90deg]
+        } else {
+          // 4-player rotations: ['rotate-90', 'rotate-90', 'rotate-[-90deg]', 'rotate-[-90deg]']
+          if (num.playerIdx === 0) animationName = 'floatUp90 1.5s ease-out forwards'; // Player 0: rotate-90
+          if (num.playerIdx === 1) animationName = 'floatUp90 1.5s ease-out forwards'; // Player 1: rotate-90
+          if (num.playerIdx === 2) animationName = 'floatUpNeg90 1.5s ease-out forwards'; // Player 2: rotate-[-90deg]
+          if (num.playerIdx === 3) animationName = 'floatUpNeg90 1.5s ease-out forwards'; // Player 3: rotate-[-90deg]
+        }
+        
+        return (
+          <div
+            key={num.id}
+            className="fixed pointer-events-none z-50"
+            style={{
+              left: `calc(${positionStyle.left} + ${num.offset?.x || 0}px)`,
+              top: `calc(${positionStyle.top} + ${num.offset?.y || 0}px)`,
+              animation: animationName
+            }}
+          >
+            <div className={`text-4xl font-bold ${
+              num.change > 0 ? 'text-green-400' : 'text-red-400'
+            } drop-shadow-lg`}>
+              {num.change > 0 ? '+' : ''}{num.change}
+            </div>
+          </div>
+        );
+      })}
 
     </div>
 
